@@ -6,6 +6,8 @@ The PowerPoint slides, the videos, and the workshop guides in this repo are for 
 
 The Azure Stack Hub Foundation Core are a set of materials (PowerPoint presentations, workshops, and links to videos) aiming to provide Azure Stack Hub Operators the foundational materials required to ramp-up and understand the basics of operating Azure Stack Hub.
 
+The files in this folder are the PowerPoint slides that accompany the video series listed below. You will need to download the .pptx you are interested in and view the locally.
+
 # Background
 
 Since Azure Stack Hub launched, Microsoft together with Intel created a program to enable and accelerate our customers and partners around the world in their adoption of Azure Stack Hub. The main drivers of the program have been the Microsoft Enterprise Services teams (both Microsoft Consulting Services, as well as Microsoft Premier) and through the Consultants, Premier Field Engineers, and Architects, have delivered a large number of projects – ranging from smaller workshops, all the way to full blown production deliveries.
