@@ -2,7 +2,7 @@ This work is licensed under a [Creative Commons Attribution - ShareAlike 4.0 Int
 
 The PowerPoint slides, the videos, and the workshop guides in this repo are for informational purposes only. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED.
 
-# Project Name
+# Overview
 
 The Azure Stack Hub Foundation Core are a set of materials (PowerPoint presentations, workshops, and links to videos) aiming to provide Azure Stack Hub Operators the foundational materials required to ramp-up and understand the basics of operating Azure Stack Hub.
 
