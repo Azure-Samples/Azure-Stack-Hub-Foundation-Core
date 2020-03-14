@@ -64,3 +64,6 @@ The [Operator Workshop](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundat
 * Understanding Quotas / Plans / Offers
 * Creating and managing Custom Images
 
+# Next steps
+
+Follow us on the [Azure Stack blog](https://techcommunity.microsoft.com/t5/azure-stack-blog/bg-p/AzureStackBlog) and open a new conversation on the [Azure Stack conversation space](https://techcommunity.microsoft.com/t5/azure-stack/bd-p/AzureStack).
