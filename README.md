@@ -57,7 +57,7 @@ The [Operator Workshop](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundat
 * Self Service User Subscription
 * Creating a VMSS
 
-2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab])https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/OperatorWorkshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
+2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/OperatorWorkshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
 
 * Diagnostics and runnign Test Azure Stack Hub
 * Capacity Management
