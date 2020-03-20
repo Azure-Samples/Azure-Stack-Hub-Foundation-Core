@@ -53,7 +53,9 @@ In the next steps we will:
 
 > [!Note] resources can be created in the same Resource Group (RG) or in multiple RGs, as long as they are created in the same Azure Stack subscriptions, you will be able to use them. To simplify things, you should create them in the same RG.
 
-While logged on to the ASDK Virtual Machine, open the Azure Stack User Portal icon. For the next steps, use the "aadUserName" and the "aadUserPassword" from the CRED.TXT file on the desktop.
+> [!Note] If you didn't use Matt's script to configure your ASDK, yo will need to create a Azure Stack Hub User subscription first - in the following labs this is called "AzS PoC Subscription" - https://docs.microsoft.com/azure-stack/operator/azure-stack-subscribe-plan-provision-vm. You will also need to download images in the Azure Stack Marketplace Management - https://docs.microsoft.com/azure-stack/operator/azure-stack-download-azure-marketplace-item. 
+
+While logged on to the ASDK Virtual Machine, open the Azure Stack User Portal using the "aadUserName" and the "aadUserPassword".
 
 ### Create the vnet, subnet, and NSG
 
