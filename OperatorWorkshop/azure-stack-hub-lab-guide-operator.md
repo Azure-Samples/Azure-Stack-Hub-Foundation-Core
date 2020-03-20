@@ -14,8 +14,8 @@ In this set of procedures, the lab user will perform functions as both the Azure
 
 There are several ways to deploy an ASDK - you can check the http://aka.ms/asdk to download and use the Microsoft recommended options, or you could try community based scripts that help create ASDKs that are hosted even in Azure (https://github.com/yagmurs/AzureStack-VM-PoC).
 
-Regardless how you deploy it, this guide assumes that:
-1. you have a running ASDK, that leverages AAD for identity
+Regardless how you deploy it, this guide assumes that the following are configured:
+1. running ASDK, that leverages AAD for identity
 2. the ASDK is already registered and configured (for more info on configuring it, either use the guidance found at https://docs.microsoft.com/azure-stack/asdk/asdk-install - or use the community based set of scripts called "[Azure Stack POC Configurator](https://github.com/mattmcspirit/azurestack)" )
 3. PowerShell for Azure Stack Hub
 4. Latest Azure Stack Hub Tools
@@ -44,7 +44,7 @@ In the next steps we will:
 
 - Test Azure Stack health
 
-While logged on to the ASDK Virtual Machine, open the Azure Stack User Portal icon. For the next steps, use the "aadUserName" and the "aadUserPassword" from the CRED.TXT file on the desktop.
+While logged on to the ASDK Virtual Machine, open the Azure Stack User Portal and use the "aadUserName" and the "aadUserPassword" to authenticate.
 
 1.  Open Hyper-V Manager and click on the **AzS-ERCS01** VM
 
@@ -334,13 +334,11 @@ For this next step, you will need an VHD which is sysprep'ed and prepared to be 
 
 > the following steps assume you have used an Azure VM and uploaded the prepared VHD in a public storage account names "storageaccount", using a container named "vhdimages"
 
-In the ASDK, using AzCopy in a PowerShell window, download the image - from
-
-https://storageaccount.blob.core.windows.net/vdhimages/WS201920191230155433.vhd
+In the ASDK, using AzCopy in a PowerShell window, download the image.
 
 ![](media/azure-stack-hub-lab-guide-operator/image32.png)
 
-> [!Note] the vhd doesn’t contain the MD5 data and if you run azcopy without the "--check-md5=NoCheck" option, it’ll fail because the hash will not match
+> [!Note] if the vhd doesn’t contain the MD5 data and if you run azcopy without the "--check-md5=NoCheck" option, it’ll fail because the hash will not match
 
 .\\azcopy.exe copy "https://storageaccount.blob.core.windows.net/vdhimages/WS201920191230155433.vhd" "C:\\r" --check-md5=NoCheck
 
