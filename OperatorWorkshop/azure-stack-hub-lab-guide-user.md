@@ -203,7 +203,7 @@ Before beginning, verify that the "Azure Performance Diagnostics" Virtual Machin
 
 -   Click on the Azure Marketplace Management
 
--   If the "Azure Performance Diagnostics" Virtual Machine Extension is now already present, click on "Add from Azure"
+-   If the "Azure Performance Diagnostics" Virtual Machine Extension is not already present, click on "Add from Azure"
 
 -   Search for the "Azure Performance Diagnostics" Virtual Machine Extension and download it
 
