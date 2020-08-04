@@ -28,7 +28,7 @@ These slides are complemented by the [Azure Stack Hub Foundation - Core video se
 * [M04c Azure Resource Manager Templates](https://youtu.be/ncXXZaHx3kA?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
 * [M05a Azure Stack Offers and Plans](https://youtu.be/WUYNU9z7cyw?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
 * [M05b Azure Stack Marketplace](https://youtu.be/xo2B5ohl6rU?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
-* [M06a Azure Stack Hub Virtual Networking.pptx](https://youtu.be/cQuvO6Za2Ng?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
+* [M06a Azure Stack Hub Virtual Networking](https://youtu.be/cQuvO6Za2Ng?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
 * [M06b Azure Stack Storage](https://youtu.be/Z6bWEutd4ww?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
 * [M06c Azure Stack Compute](https://youtu.be/0OZuTbK7pts?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
 * [M07a Azure Stack PaaS Concepts](https://youtu.be/MJU9-8vv23M?list=PLF1fEGG5LcdHdTns6TN-uVhqs66ax6VkE)
