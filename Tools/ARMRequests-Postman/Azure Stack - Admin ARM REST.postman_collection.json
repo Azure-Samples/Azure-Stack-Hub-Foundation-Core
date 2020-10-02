@@ -1,0 +1,1089 @@
+{
+	"info": {
+		"_postman_id": "401f68c2-0274-4f0b-ba9a-cd5135d69f4f",
+		"name": "Azure Stack - Admin ARM REST",
+		"description": "This sequence of requests will enable an Azure Stack Operator to authenticate and interact with an Azure Stack Admin ARM instance. \r\n\r\nYou will need to set a few pre requsite Variables:\r\n- The **URL for the Admin ARM** on the Azure Stack instance you are calling\r\n- The **Tenant Name** for the (Azure) Active directory \r\n- The **credentials** for the Service Principal you will use to authenticate\r\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authenticate and get Subscription",
+			"item": [
+				{
+					"name": "1.1 Get Endpoints for environment",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b49ca4db-4207-4350-8725-2c08fa07c5b6",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "67c177cf-046d-45cd-b330-f5ea60e3b55f",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"pm.test(\"SetArmAudience\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"armAudience\", jsonData.authentication.audiences[0]);\r",
+									"});\r",
+									"pm.test(\"SetloginEndpoint\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"loginEndpoint\", jsonData.authentication.loginEndpoint);\r",
+									"});\r",
+									"pm.test(\"SetGraphEndpoint\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"graphEndpoint\", jsonData.graphEndpoint);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{adminArmEndpoint}}/metadata/endpoints?api-version=2015-11-01",
+							"host": [
+								"{{adminArmEndpoint}}"
+							],
+							"path": [
+								"metadata",
+								"endpoints"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2015-11-01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.2 Get the Token Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "16ce46b6-f7b9-4d69-a26b-46e2d3011fa1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});pm.test(\"GetTokenEndpoint\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"tokenEndpoint\", jsonData.token_endpoint);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{loginEndpoint}}{{tenant-Id-or-Name}}/.well-known/openid-configuration",
+							"host": [
+								"{{loginEndpoint}}{{tenant-Id-or-Name}}"
+							],
+							"path": [
+								".well-known",
+								"openid-configuration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.3 Authenticate Service Principal and get a token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0b7d4972-75b0-464e-b0f6-3f32154286e9",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});pm.test(\"GetToken\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.access_token);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials",
+									"type": "text"
+								},
+								{
+									"key": "resource",
+									"value": "{{armAudience}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{servicePrincipalId}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{servicePrincipalSecret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{tokenEndpoint}}",
+							"host": [
+								"{{tokenEndpoint}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.4 Get Default Provider Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9adda48f-7f93-4d4a-8716-cb2c4d9930d1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});pm.test(\"GetSubscription\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"adminSubscription\", jsonData.value[0].subscriptionId);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "1f79701f-e00d-48eb-8428-be3f64ec713a",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{adminArmEndpoint}}/subscriptions?api-version=2015-01-06",
+							"host": [
+								"{{adminArmEndpoint}}"
+							],
+							"path": [
+								"subscriptions"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2015-01-06"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.5 Get the Location and default Resource Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3e3afb6f-6c55-4c8d-bc64-ca4865b239b6",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});pm.test(\"Store Location\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"location\", jsonData.value[0].name);",
+									"});",
+									"pm.test(\"Store Default RG\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"defaultResourceGroup\", \"System.\"+jsonData.value[0].name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "c8c5516a-c993-4994-8535-3c4ee978f049",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{adminArmEndpoint}}/locations?api-version=2015-01-06",
+							"host": [
+								"{{adminArmEndpoint}}"
+							],
+							"path": [
+								"locations"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2015-01-06"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1.6 Get the Namespaces available to the Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "76bd9d95-37fb-4a35-9104-13819169d5cb",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});pm.test(\"Store Location\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"location\", jsonData.value[0].name);",
+									"});",
+									"pm.test(\"Store Default RG\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"defaultResourceGroup\", \"System.\"+jsonData.value[0].name);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "06ad9db9-bbe5-4580-8974-81cb740141d8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/providers?api-version=2018-09-01",
+							"host": [
+								"{{adminArmEndpoint}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{adminSubscription}}",
+								"providers"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "2018-09-01"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "eb614fd6-c4cf-4c5d-b92d-5edbd1084165",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "f093a66c-b087-415c-8d95-0aacf313fee2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "2. Authenticated ARM Requests",
+			"item": [
+				{
+					"name": "Fabric Management Requests",
+					"item": [
+						{
+							"name": "Get Fabric Locations",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "f251ffa8-f7d4-4774-afa2-0340b05f8a6d",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test(\"Store Location\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"fabriclocations\", jsonData.value[0].id);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "a1b4ad9d-1693-4c5b-8832-b12437b9773d",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/resourcegroups/{{defaultResourceGroup}}/providers/Microsoft.Fabric.Admin/fabricLocations?api-version=2016-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"resourcegroups",
+										"{{defaultResourceGroup}}",
+										"providers",
+										"Microsoft.Fabric.Admin",
+										"fabricLocations"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2016-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Scale Units",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c0e5c837-525c-4719-b700-bdd2a2f818e8",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test(\"Set location and Default Resource Group\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"scaleunit\", jsonData.value[0].id);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "a936a528-6086-455f-9dfa-7b448a61ce33",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/{{fabriclocations}}/scaleunits?api-version=2016-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"{{fabriclocations}}",
+										"scaleunits"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2016-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Nodes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "6f395751-7fc3-47a5-ba50-a6b04dcb3320",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "92d786b8-be2f-4ed6-8d38-7431d4a94a4a",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/providers/Microsoft.Subscriptions.Admin/subscriptions?api-version=2018-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"providers",
+										"Microsoft.Subscriptions.Admin",
+										"subscriptions"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2018-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Storage Subsystems",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "55666da0-5d09-492c-9e8d-4adcc9526dd6",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"pm.test(\"Set location and Default Resource Group\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set(\"storageSubsystem\", jsonData.value[0].id);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "1db9297f-d980-43ee-b6ed-dbd1d5913ae4",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}{{scaleunit}}/storagesubsystems?api-version=2018-10-01",
+									"host": [
+										"{{adminArmEndpoint}}{{scaleunit}}"
+									],
+									"path": [
+										"storagesubsystems"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2018-10-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Storage Volumes",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2ae2e8fa-1b7f-4960-8c23-2a1a228aa526",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "d09d586b-cce0-4768-ad89-cf82b49efdac",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}{{storageSubsystem}}/volumes?api-version=2018-10-01",
+									"host": [
+										"{{adminArmEndpoint}}{{storageSubsystem}}"
+									],
+									"path": [
+										"volumes"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2018-10-01"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "da6c6689-fc98-4f78-b042-9a093b1c57da",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "c13f75a0-8bc6-49e6-a8c9-15e53ad34a5f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Usage Management Requests",
+					"item": [
+						{
+							"name": "Get all user subscriptions",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "990a7373-e34e-4e8c-aa2d-0d4586a536cb",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "d141464f-07a3-4580-b88e-4bf65fc92bae",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/providers/Microsoft.Subscriptions.Admin/subscriptions?api-version=2018-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"providers",
+										"Microsoft.Subscriptions.Admin",
+										"subscriptions"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2018-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Usage Aggregates",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4a6d442b-5431-4895-8a4e-d0cc7cf616cf",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "d02a09ac-212d-4e54-9e06-b52bbdc09117",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/providers/Microsoft.Commerce.Admin/subscriberUsageAggregates?api-version=2015-06-01-preview&reportedStartTime=2019-08-01T00%3a00%3a00.00Z&reportedEndTime=2020-08-02T00%3a00%3a00.00Z&aggregationGranularity=Daily&subscriberId=&continuationToken=",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"providers",
+										"Microsoft.Commerce.Admin",
+										"subscriberUsageAggregates"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2015-06-01-preview"
+										},
+										{
+											"key": "reportedStartTime",
+											"value": "2019-08-01T00%3a00%3a00.00Z"
+										},
+										{
+											"key": "reportedEndTime",
+											"value": "2020-08-02T00%3a00%3a00.00Z"
+										},
+										{
+											"key": "aggregationGranularity",
+											"value": "Daily",
+											"description": "This can take values \"Daily\", \"Hourly\""
+										},
+										{
+											"key": "subscriberId",
+											"value": "",
+											"description": "[OPTIONAL] Subscription ID of the User Subscription, in case you're looking to get usage for a specific subscription"
+										},
+										{
+											"key": "continuationToken",
+											"value": "",
+											"description": "[OPTIONAL] Continuation token from a prior usage aggregates request"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Update Management Requests",
+					"item": [
+						{
+							"name": "Get Infrastructure Update Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "dabb0a27-9e5d-49e5-af04-3e92df9e7873",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "60300649-a513-46db-930b-ed83031835dc",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/resourceGroups/{{defaultResourceGroup}}/providers/Microsoft.Update.Admin/updateLocations/{{location}}?api-version=2016-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"resourceGroups",
+										"{{defaultResourceGroup}}",
+										"providers",
+										"Microsoft.Update.Admin",
+										"updateLocations",
+										"{{location}}"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2016-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Infrastructure Update History",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b87c086c-2e1b-4cac-96fc-a9009a75b848",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "259b19d9-547a-4479-8eaf-e2223219a61f",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/resourceGroups/{{defaultResourceGroup}}/providers/Microsoft.Update.Admin/updateLocations/{{location}}/updates?api-version=2016-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"resourceGroups",
+										"{{defaultResourceGroup}}",
+										"providers",
+										"Microsoft.Update.Admin",
+										"updateLocations",
+										"{{location}}",
+										"updates"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2016-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Value-Add RP Update Status",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "5cc40c0f-4509-40a1-ab2e-d32fd5c9b538",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "19419a12-ae20-4ab2-ae12-45f7448cf647",
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{adminArmEndpoint}}/subscriptions/{{adminSubscription}}/providers/Microsoft.Subscriptions.Admin/subscriptions?api-version=2018-05-01",
+									"host": [
+										"{{adminArmEndpoint}}"
+									],
+									"path": [
+										"subscriptions",
+										"{{adminSubscription}}",
+										"providers",
+										"Microsoft.Subscriptions.Admin",
+										"subscriptions"
+									],
+									"query": [
+										{
+											"key": "api-version",
+											"value": "2018-05-01"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "d789f4e3-f8b8-4e6b-a312-526a7d4eb625",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "6fa87278-2cb4-4c9d-a3c3-a9659c9c9a8c",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "7a8e2ac9-1f26-4fe6-873e-3bb7e0a181c0",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "3ab28201-cab1-4275-836b-fe8f47a3d6b9",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
