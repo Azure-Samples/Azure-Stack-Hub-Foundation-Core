@@ -10,7 +10,7 @@ We will update this data as we progress and welcome any feedback on how to impro
 
 ## Learning Materials
 
-The Azure Stack Hub Foundation Core are a set of materials (PowerPoint presentations, workshops, and links to videos) aiming to provide Azure Stack Hub Operators the foundational materials required to ramp-up and understand the basics of operating Azure Stack Hub.
+The [Azure Stack Hub Foundation Core](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASF-Training) are a set of materials (PowerPoint presentations, workshops, and links to videos) aiming to provide Azure Stack Hub Operators the foundational materials required to ramp-up and understand the basics of operating Azure Stack Hub.
 
 ## ASR Failback Script
 
@@ -21,7 +21,6 @@ The [ASR-failback-script](https://github.com/Azure-Samples/Azure-Stack-Hub-Found
 The Azure Stack Hub Operators use a wide range of tooling to manage their infrastructure. The [Tools](http://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/Tools) folder provides these as a starting point - from PowerShell scripts, to API calls, ARM templates, Azure integration, and all kinds of automation. This repo is intended to capture some fo these tools and to provide them as example for others, as they are building their tooling as well. 
 Most of these scripts are small snippets which can, and should be, included in your own automation. As most of them are generalized scripts, you will need to configure them according to your own environment.
 
-The [ASR-failback-script](http://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASF-Training)
 
 ## SlideShare
 
