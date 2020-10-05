@@ -17,7 +17,7 @@ The Azure Stack Hub Foundation Core are a set of materials (PowerPoint presentat
 
 ## ASR Failback Script
 
-These [ASR-failback-script](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASR-failback-script) tool help automate the failback process, when using ASR to protect Azure Stack Hub VMs. The process is described in the [Azure Site Recovery failback tool](https://docs.microsoft.com/azure-stack/operator/site-recovery-failback) document.
+The [ASR-failback-script](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASR-failback-script) tool help automate the failback process, when using ASR to protect Azure Stack Hub VMs. The process is described in the [Azure Site Recovery failback tool](https://docs.microsoft.com/azure-stack/operator/site-recovery-failback) document.
 
 ## Tools
 
