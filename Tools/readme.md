@@ -15,7 +15,7 @@ Most of these scripts are small snippets which can, and should be, included in y
 * MiscTools - multiple tools used for various operator activities
   
     > - CheckDriveModel.ps1 - check the Drive Models against the whitelisted/expected values
-    > - CreateKeyVaultADFS.ps1 - create KeyVault in an ADFS env - full documentation found in teh [Manage Key Vault in Azure Stack Hub using PowerShell](https://docs.microsoft.com/azure-stack/user/azure-stack-key-vault-manage-powershell) article
+    > - CreateKeyVaultADFS.ps1 - create KeyVault in an ADFS env - full documentation found in the [Manage Key Vault in Azure Stack Hub using PowerShell](https://docs.microsoft.com/azure-stack/user/azure-stack-key-vault-manage-powershell) article
     > - ShowAzsMetrics.ps1 - show metrics used by the fabric roles (links to full documentation in the script for each role)
     > - ShowEndpoints.ps1 - show the endpoints used by AzStackHub
     > - Create-QuotaPlanOffer.ps1 - example of automating the creation of quotas/plans/offers
