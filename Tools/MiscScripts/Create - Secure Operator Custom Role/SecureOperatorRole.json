@@ -1,0 +1,22 @@
+{
+    "Name": "Operator",
+    "Id": null,
+    "IsCustom": true,
+    "Description": "Lets you manage everything, except create & update subscriptions.",
+    "Actions": [
+      "*"
+    ],
+    "NotActions": [
+      "Microsoft.Subscriptions.Admin/subscriptions/write",
+      "Microsoft.Authorization/*/Delete",
+      "Microsoft.Authorization/*/Write",
+      "Microsoft.Authorization/elevateAccess/Action" 
+
+    ],
+    "DataActions": null,
+    "NotDataActions": null,
+    "AssignableScopes": [
+      "/subscriptions/48826980-1234-1234-1234-1234c37ce7"  
+    ]
+  } 
+  
