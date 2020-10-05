@@ -12,7 +12,7 @@ Most of these scripts are small snippets which can, and should be, included in y
     > script to automate user-subscription creation, when using Delegated Providers
 
 
-* StopGapTools - multiple tools used for various operator activities
+* MiscTools - multiple tools used for various operator activities
   
     > - CheckDriveModel.ps1 - check the Drive Models against the whitelisted/expected values
     > - CreateKeyVaultADFS.ps1 - create KeyVault in an ADFS env - full documentation found in teh [Manage Key Vault in Azure Stack Hub using PowerShell](https://docs.microsoft.com/azure-stack/user/azure-stack-key-vault-manage-powershell) article
