@@ -1,6 +1,3 @@
-> temp repo with v2 changes
-
-
 # Azure Stack Hub
 
 This repo is intended to help Azure Stack Hub Operators accelerate their ramping up and provide starting tools they can use for various activities. It includes 3 main types of data:
