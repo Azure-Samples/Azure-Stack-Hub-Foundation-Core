@@ -6,7 +6,7 @@ $FQDN = "azurestack.external"
 $ArmEndpoint = "https://adminmanagement.$Region.$FQDN"
 
 # Register an AzureRM environment that targets your Azure Stack instance
-Add-AzureRmEnvironment -Name "AzureStackAdmin" -ArmEndpoint $ArmEndpoint
+Add-AzureRmEnvironment -Name "AzureStackAdmin$Region" -ArmEndpoint $ArmEndpoint
 
 # Sign in to your environment
 Connect-AzureRmAccount -EnvironmentName "AzureStackAdmin$Region"
