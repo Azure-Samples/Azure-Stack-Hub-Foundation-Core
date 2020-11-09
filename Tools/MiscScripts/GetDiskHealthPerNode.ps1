@@ -17,7 +17,7 @@ $ScaleUnit = Get-AzsScaleUnit
 $StorageSubSystem = Get-AzsStorageSubSystem -ScaleUnit $ScaleUnit.Name
 
 # Get all disks in a storage subsystem and display their health status
-Get-AzsDrive -StorageSubSystem $StorageSubSystem.Name -ScaleUnit $ScaleUnit.Name | Sort-Object StorageNode, MediaType, PhysicalLocation | Format-Table StorageNode, HealthStatus, PhysicalLocation, Model, MediaType, CapacityGB, OperationalStatus, Description, Action
+Get-AzsDrive -StorageSubSystem $StorageSubSystem.Name -ScaleUnit $ScaleUnit.Name | Sort-Object -Property StorageNode, MediaType, PhysicalLocation | Format-Table StorageNode, HealthStatus, PhysicalLocation, Model, MediaType, CapacityGB, OperationalStatus, Description, Action
 
 <#
 Sample output:
