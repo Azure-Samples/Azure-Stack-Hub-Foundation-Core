@@ -20,5 +20,6 @@ Most of these scripts are small snippets which can, and should be, included in y
     > - ShowEndpoints.ps1 - show the endpoints used by AzStackHub
     > - Create-QuotaPlanOffer.ps1 - example of automating the creation of quotas/plans/offers
     > - Create-Secure Operator Custom Role - steps to create an customer Operator RBAC role without rights to take ownership of user subscriptions
+    > - GetDiskHealthPerNode.ps1 - script to check health of disks via admin ARM endpoint
 
     
