@@ -15,7 +15,7 @@ Along the way, the team talked to hundreds of organizations interested in Azure 
  
 # Getting Started
 
-The [ASF slides](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASF-slides) are the core modules providing information about all aspects of Azure Stack Hub - from the internal RPs, to the hybrid solutions that could be built
+The [ASF slides](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASF-Training/ASF-slides) are the core modules providing information about all aspects of Azure Stack Hub - from the internal RPs, to the hybrid solutions that could be built
 
 These slides are complemented by the [Azure Stack Hub Foundation - Core video series](https://aka.ms/azsasfvideos), where most of the chapters are explained and go indepth by the technical leads that helped create these slides. The videos can be used to learn and prepare for the Azure Stack Operator role itself, or even for guidance when delivering these workshops.
 
@@ -46,9 +46,9 @@ These slides are complemented by the [Azure Stack Hub Foundation - Core video se
 # Hands'on
 
 Once you go through the basics, reviewing the slides as well as the videos, the next step would be to gain some operational experience - hands-on knowledge. 
-The [Operator Workshop](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/OperatorWorkshop) aims at providing a starting point for gaining this hands-on experience, with two workshops:
+The [Operator Workshop](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/tree/master/ASF-Training/ASF-workshop) aims at providing a starting point for gaining this hands-on experience, with two workshops:
 
-1. the [User Guide](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/OperatorWorkshop/azure-stack-hub-lab-guide-user.md) workshop - which goes through basics of what an user would experience on Azure Stack Hub. This includes things like:
+1. the [User Guide](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/ASF-Training/ASF-workshop/azure-stack-hub-lab-guide-user.md) workshop - which goes through basics of what an user would experience on Azure Stack Hub. This includes things like:
 * Create the vnet, subnet,and NSG
 * Create the first VM
 * Create the second VM
@@ -58,7 +58,7 @@ The [Operator Workshop](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundat
 * Self Service User Subscription
 * Creating a VMSS
 
-2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/OperatorWorkshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
+2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab](https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/ASF-Training/ASF-workshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
 
 * Diagnostics and runnign Test Azure Stack Hub
 * Capacity Management
