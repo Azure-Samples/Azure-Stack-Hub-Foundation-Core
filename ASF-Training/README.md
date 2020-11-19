@@ -46,9 +46,9 @@ These slides are complemented by the [Azure Stack Hub Foundation - Core video se
 # Hands'on
 
 Once you go through the basics, reviewing the slides as well as the videos, the next step would be to gain some operational experience - hands-on knowledge. 
-The [Operator Workshop](/ASF-workshop/readme.md) aims at providing a starting point for gaining this hands-on experience, with two workshops:
+The [Operator Workshop](./ASF-workshop/readme.md) aims at providing a starting point for gaining this hands-on experience, with two workshops:
 
-1. the [User Guide](/ASF-workshop/azure-stack-hub-lab-guide-user.md) workshop - which goes through basics of what an user would experience on Azure Stack Hub. This includes things like:
+1. the [User Guide](./ASF-workshop/azure-stack-hub-lab-guide-user.md) workshop - which goes through basics of what an user would experience on Azure Stack Hub. This includes things like:
 * Create the vnet, subnet,and NSG
 * Create the first VM
 * Create the second VM
