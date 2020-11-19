@@ -58,7 +58,7 @@ The [Operator Workshop](/ASF-workshop/readme.md) aims at providing a starting po
 * Self Service User Subscription
 * Creating a VMSS
 
-2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab](/ASF-workshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
+2. once familiar with the user side of things, next would be the [Azure Stack Operator Lab](./ASF-workshop/azure-stack-hub-lab-guide-operator.md), which goes into details around the operational aspects of Azure Stack Hub, including:
 
 * Diagnostics and runnign Test Azure Stack Hub
 * Capacity Management
