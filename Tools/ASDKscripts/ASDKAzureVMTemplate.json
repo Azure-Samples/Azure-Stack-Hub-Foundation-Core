@@ -137,7 +137,7 @@
 		"virtualNetworkName": "[concat(parameters('vmName'),'-VNET')]",
 		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
 		"networkSecurityGroupName": "[concat(parameters('vmName'),'-NSG')]",
-		"extensionFileLocation": "https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/Tools/ASDKscripts/Invoke-ASDKDeployment.ps1",
+		"extensionFileLocation": "https://raw.githubusercontent.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/master/Tools/ASDKscripts/Invoke-ASDKDeployment.ps1",
 		"imageName": "[concat(parameters('vmName'),'-image')]"
 	},
 	"resources": [
