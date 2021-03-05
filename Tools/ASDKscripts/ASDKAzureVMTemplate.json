@@ -1,0 +1,341 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"adminUsername": {
+			"type": "string",
+			"defaultValue": "asdk-vm",
+			"metadata": {
+				"description": "Username for the Virtual Machine."
+			}
+		},
+		"adminPassword": {
+			"type": "securestring",
+			"minLength": 6,
+			"metadata": {
+				"description": "Password for the Virtual Machine."
+			}
+		},
+		"dnsLabelPrefix": {
+			"type": "string",
+			"defaultValue": "[toLower(concat(parameters('vmName'),'-', uniqueString(resourceGroup().id, parameters('vmName'))))]",
+			"metadata": {
+				"description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"publicIpName": {
+			"type": "string",
+			"defaultValue": "[concat(parameters('vmName'),'-ip')]",
+			"metadata": {
+				"description": "Name for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"publicIPAllocationMethod": {
+			"type": "string",
+			"defaultValue": "Dynamic",
+			"allowedValues": [
+				"Dynamic",
+				"Static"
+			],
+			"metadata": {
+				"description": "Allocation method for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"patchMode": {
+			"type": "String",
+			"defaultValue": "AutomaticByOS"
+		},
+		"numDataDisks": {
+			"type": "int",
+			"defaultValue": 4,
+			"minValue": 4,
+			"metadata": {
+				"description": "This parameter allows the user to select the number of disks they want"
+			}
+		},
+		"publicIpSku": {
+			"type": "string",
+			"defaultValue": "Basic",
+			"allowedValues": [
+				"Basic",
+				"Standard"
+			],
+			"metadata": {
+				"description": "SKU for the Public IP used to access the Virtual Machine."
+			}
+		},
+		"vhdUri": {
+			"type": "string",
+			"metadata": {
+				"description": "The url for Cloudbuilder.vhd in the subscription"
+			}
+		},
+		"vmSize": {
+			"type": "string",
+			"defaultValue": "Standard_E48s_v3",
+			"allowedValues": [
+				"Standard_E32s_v3",
+				"Standard_E48s_v3"
+			],
+			"metadata": {
+				"description": "Size of the virtual machine."
+			}
+		},
+		"location": {
+			"type": "string",
+			"defaultValue": "[resourceGroup().location]",
+			"metadata": {
+				"description": "Location for all resources."
+			}
+		},
+		"vmName": {
+			"type": "string",
+			"defaultValue": "asdk-vm",
+			"metadata": {
+				"description": "Name of the virtual machine."
+			}
+		},
+		"AzureDirectoryTenantName": {
+			"type": "string",
+			"defaultValue": "yourtenant.onmicrosoft.com",
+			"metadata": {
+				"description": "<yourtenant.onmicrosoft.com> can only contain A-Z, a-z, 0-9, dots and a hyphen"
+			}
+		},
+		"AADUserName": {
+			"type": "string",
+			"defaultValue": "false",
+			"metadata": {
+				"description": "Password of the Azure Directory"
+			}
+		},
+		"AADPassword": {
+			"type": "string",
+			"defaultValue": "false",
+			"metadata": {
+				"description": "Password of the Azure Directory"
+			}
+		},
+		"DeploymentType": {
+			"type": "string",
+			"defaultValue": "NoDeployment",
+			"allowedValues": [
+				"AAD",
+				"ADFS",
+				"NoDeployment"
+			],
+			"metadata": {
+				"description": "ASDK deployment type"
+			}
+		}
+	},
+	"variables": {
+		"nicName": "[concat(parameters('vmName'),'-nic')]",
+		"addressPrefix": "10.0.0.0/16",
+		"subnetName": "Subnet",
+		"subnetPrefix": "10.0.0.0/24",
+		"virtualNetworkName": "[concat(parameters('vmName'),'-VNET')]",
+		"subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+		"networkSecurityGroupName": "[concat(parameters('vmName'),'-NSG')]",
+		"extensionFileLocation": "https://github.com/Azure-Samples/Azure-Stack-Hub-Foundation-Core/blob/master/Tools/ASDKscripts/Invoke-ASDKDeployment.ps1",
+		"imageName": "[concat(parameters('vmName'),'-image')]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Compute/images",
+			"name": "[variables('imageName')]",
+			"apiVersion": "2020-06-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"storageProfile": {
+					"osDisk": {
+						"osType": "Windows",
+						"osState": "Generalized",
+						"blobUri": "[parameters('vhdUri')]",
+						"storageAccountType": "Premium_LRS"
+					}
+				},
+				"hyperVGeneration": "2"
+			}
+		},
+		{
+			"type": "Microsoft.Network/publicIPAddresses",
+			"apiVersion": "2020-06-01",
+			"name": "[parameters('publicIPName')]",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('publicIpSku')]"
+			},
+			"properties": {
+				"publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
+				"dnsSettings": {
+					"domainNameLabel": "[parameters('dnsLabelPrefix')]"
+				}
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2020-06-01",
+			"name": "[variables('networkSecurityGroupName')]",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "default-allow-3389",
+						"properties": {
+							"priority": 1000,
+							"access": "Allow",
+							"direction": "Inbound",
+							"destinationPortRange": "3389",
+							"protocol": "Tcp",
+							"sourcePortRange": "*",
+							"sourceAddressPrefix": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2020-06-01",
+			"name": "[variables('virtualNetworkName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+			],
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[variables('addressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[variables('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2020-06-01",
+			"name": "[variables('nicName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]",
+				"[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+			],
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "ipconfig1",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIPAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]"
+							},
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							}
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2020-06-01",
+			"name": "[parameters('vmName')]",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+				"[resourceId('Microsoft.Compute/images/', variables('imageName'))]"
+			],
+			"properties": {
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"osProfile": {
+					"computerName": "[parameters('vmName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]",
+					"windowsConfiguration": {
+						"enableAutomaticUpdates": true,
+						"provisionVmAgent": true,
+						"patchSettings": {
+							"patchMode": "[parameters('patchMode')]"
+						}
+					}
+				},
+				"storageProfile": {
+					"imageReference": {
+						"id": "[resourceId('Microsoft.Compute/Images', variables('imageName'))]"
+					},
+					"osDisk": {
+						"createOption": "FromImage",
+						"managedDisk": {
+							"storageAccountType": "Premium_LRS"
+						},
+						"diskSizeGB": 256
+					},
+					"copy": [
+						{
+							"name": "dataDisks",
+							"count": "[parameters('numDataDisks')]",
+							"input": {
+								"caching": "ReadWrite",
+								"diskSizeGB": 256,
+								"lun": "[copyIndex('dataDisks')]",
+								"name": "[concat(parameters('vmName'), '-datadisk', copyIndex('dataDisks'))]",
+								"createOption": "Empty"
+							}
+						}
+					]
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+						}
+					]
+				}
+			},
+			"resources": [
+				{
+					"type": "extensions",
+					"name": "ASDKdeploymentScript",
+					"apiVersion": "2018-06-01",
+					"location": "[parameters('location')]",
+					"dependsOn": [
+						"[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+					],
+					"properties": {
+						"publisher": "Microsoft.Compute",
+						"type": "CustomScriptExtension",
+						"typeHandlerVersion": "1.10",
+						"autoUpgradeMinorVersion": true,
+						"settings": {
+							"fileUris": [
+								"[variables('extensionFileLocation')]"
+							],
+							"commandToExecute": "[concat('powershell.exe -File Invoke-ASDKDeployment.ps1 -AdminUsername ', parameters('adminUsername'), ' -AdminPassword ', parameters('adminPassword'), ' -AzureDirectoryTenantName ', parameters('AzureDirectoryTenantName'), ' -AADUsername ', parameters('AADUsername'), ' -AADPassword ',parameters('AADPassword'), ' -DeploymentType ', parameters('DeploymentType'))]"
+						}
+					}
+				}
+			]
+		}
+	],
+	"outputs": {
+		"adminUsername": {
+			"type": "string",
+			"value": "Administrator"
+		}
+	}
+}
