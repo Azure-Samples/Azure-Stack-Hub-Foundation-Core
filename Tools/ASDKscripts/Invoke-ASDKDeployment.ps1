@@ -51,7 +51,7 @@ $AADscriptToExecute = @'
     net stop w32time | w32tm /unregister | w32tm /register | net start w32time | 
     w32tm /resync /rediscover | w32tm /config /manualpeerlist:$TimeServer /syncfromflags:MANUAL /reliable:yes /update | w32tm /query /status 
 
-	$secureAzureadPassword = ConvertTo-SecureString [AADPassword] -AsPlainText -Force
+	$secureAzureadPassword = ConvertTo-SecureString '[AADPassword]' -AsPlainText -Force
 	$InfraAzureDirectoryTenantAdminCredential = New-Object System.Management.Automation.PSCredential ('[AADUserName]', $secureAzureadPassword)
     $adminpass = ConvertTo-SecureString [AdminPassword] -AsPlainText -Force 
     cd C:\CloudDeployment\Setup
