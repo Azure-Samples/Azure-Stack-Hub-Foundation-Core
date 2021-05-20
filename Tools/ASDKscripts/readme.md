@@ -45,7 +45,7 @@ If you use the automated deployment (meaning you've included the AAD information
 >     DeploymentType = 'AAD'
 >    AzureDirectoryTenantName = 'youraddname.onmicrosoft.com'
 >    AADUserName = 'anAdmin@youraadname.onmicrosoft.com'
->    AADPassword = 'aadAPassword'
+>    AADPassword = ConvertTo-SecureString 'yourAADPassword' -AsPlainText -Force
 > }
 > $resourceGroupName = "nameOftheRG"
 > New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName @paramList
