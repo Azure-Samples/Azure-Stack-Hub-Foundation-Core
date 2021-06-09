@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A tool has been created to assist in forwarding Azure Stack Update status to Microsoft Teams. The tool is a PowerShell function and uses a PEP connection and ARM calls to query the status of a running update and create an adaptive card and forwards to a Microsoft Teams channel via a webhook.
+A tool has been created to assist in forwarding Azure Stack Update status (Updates, Hotfixes and OEMUpdates) to Microsoft Teams. The standlone tool is a PowerShell module that runs on an operators workstation and uses a PEP connection and ARM calls to query the status of a running update and create an adaptive card and forwards to a Microsoft Teams channel via a webhook.  The tool should be manually started, run for the duration of the update and manually stopped.  
 
 The tool has two personas audience and operator:
 
@@ -16,7 +16,8 @@ Operator Message -- Intended for Azure Stack Operators
 
 ## Prerequisites
 
--   Windows 10 or Windows 2019 OS with PowerShell 7
+-   Windows 10 or Windows 2019 OS 
+-   PowerShell 7 (with Az.BootStrapper, AzureStack and Azs.Operator modules installed and configured, instructions below)
 -   WINRM Connectivity to Privileged Endpoint (PEP)
 -   HTTPS Connectivity to Azure Resource Manager (ARM)
 -   HTTPS Connectivity to Office Webhook e.g. [https://outlook.office.com/webhook/\<etc](https://outlook.office.com/webhook/%3cetc)\>
@@ -64,15 +65,12 @@ A dialog box will appear, finish the installation using all defaults.
 Open PowerShell 7 and run the following:
 
 ```powershell
-Install-Module PowerShellGet -force;
-Import-Module PowerShellGet -force;
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted;
-Install-Module -Name Az.BootStrapper -Force -AllowPrerelease;
-Install-AzProfile -Profile 2019-03-01-hybrid -Force;
-Install-Module -Name AzureStack -RequiredVersion 2.0.2-preview -AllowPrerelease;
-Get-Module Azs.Management -ListAvailable | Uninstall-Module -Force 
-Install-Module -Name Azs.Operator -RequiredVersion 0.1.2-preview -AllowPrerelease -Force -AllowClobber;
-Install-Module -Name Azs.TeamsIntegration -AllowPrerelease -Force;
+Install-Module -Name Az.BootStrapper -Force
+Get-AzApiProfile -Update
+Install-AzProfile -Profile 2020-09-01-hybrid -Force
+Install-Module -Name AzureStack -RequiredVersion 2.1.0
+Install-Module -Name Azs.Operator -AllowPrerelease -Force -AllowClobber
+Install-Module -Name Azs.TeamsIntegration -AllowPrerelease -Force
 ```
 
 If you receive an error stating -AllowPrerelease is not a parameter, ensure PowerShell is updated and restart PowerShell 7.
@@ -104,41 +102,40 @@ In PowerShell 7, run the following:
 $stampName = 'NWT'
 $OperatorUri = "https://outlook.office.com/webhook/<etc>"
 $AudienceUri = "https://outlook.office.com/webhook/<etc>"
-$Bridge = "https://teams.microsoft.com/myteamsbridge" #optional if you have a call you like people to know about.
 $PepCredential = Get-Credential -Message 'Cloud Administrator'
-Send-AzsUpdate -AudienceUri $AudienceUri -OperatorUri $OperatorUri -Stamp $stampName -BridgeInformation $Bridge -PepCredential $PepCredential
-
+Send-AzsUpdate -AudienceUri $AudienceUri -OperatorUri $OperatorUri -Stamp $stampName -PepCredential $PepCredential
 ```
-
-> [!NOTE]
-> `OperationUri` and `AudienceUri` can accept arrays if multiple channels are to be updated.
-
-For the purpose of insider testing we would appreciate forwarding status to us also, please ask your PM or ask on the Insiders channel for your own webhook to report status to for MSFT only consumption. The additional webhook can be added to both operator and audience variables with the following syntax:  
-\$OperatorUri = "https://outlook.office.com/webhook/\<Contoso_webHook\>","https://outlook.office.com/webhook/\<MSFT_Provided\>"
 
 #### To continuously monitor an update and forward status to Teams
 
 To start monitoring continuously:
 
-\$OperatorUri = "https://outlook.office.com/webhook/\<etc\>"
-
-\$AudienceUri = "https://outlook.office.com/webhook/\<etc\>"
-
-\$Bridge = https://teams.microsoft.com/l/meetup-join/\<etc\>
-
-\$PepCredential = Get-Credential -Message 'Cloud Administrator'
-
-Watch-AzsUpdate -AudienceUri \$AudienceUri -OperatorUri \$OperatorUri -Stamp \$stampName -BridgeInformation \$Bridge -PepCredential \$PepCredential
+```powershell
+$OperatorUri = "https://outlook.office.com/webhook/<etc\>"
+$AudienceUri = "https://outlook.office.com/webhook/<etc\>"
+$PepCredential = Get-Credential -Message 'Cloud Administrator'
+Watch-AzsUpdate -AudienceUri $AudienceUri -OperatorUri $OperatorUri -Stamp $stampName -PepCredential $PepCredential
+```
 
 This will send Audiences an update every 30 minutes and operators every 15, the values can be changed by using AudienceFrequency (30 or 60) and OperatorFrequency (5, 10 or 15).
 
+> [!NOTE]
+> `OperationUri` and `AudienceUri` can accept arrays if multiple channels are to be updated.
+> If you are working with support and have been asked to forward status to them, the additional webhook can be added to both operator and audience variables with the following 
+> syntax:  
+> $OperatorUri = "https://outlook.office.com/webhook/\<Contoso_webHook\>","https://outlook.office.com/webhook/\<MSFT_Provided\>"
+
+To stop the monitoring, use crtl+c in the powershell.
+
 ##### Optional parameters
 
-**-Brief** switch. Audiences and operators are only updated if there is a change to the update or the stamps update history. This is to minimise spam, it is turn off by default.
+**-Brief** (recommended) switch. Audiences and operators are only updated if there is a change to the update or the stamps update history. This is to minimise spam, it is turn off by default.
 
 **-HideEnvironmentInformation** switch. This will remove the stamp inventory from the footer of the card.
 
 **-DisposePep** switch. This will close the Pep session after each interval rather than keep it open. It will add a little bit more execution time, but may be useful if other tools are connecting to the Pep as well.
+
+**-BridgeInformation** accepts a hyperlink to a call/bridge you like people to know about.
 
 There are two choices to avoid credential prompts for the PEP whilst watching the update:
 
@@ -146,13 +143,21 @@ There are two choices to avoid credential prompts for the PEP whilst watching th
 
 2) Pass -PepCredential parameter value (less secure)
 
-#### How to report a problem
+#### Troubleshooting
 
-Please reach out on Teams Insiders or with your PM if you have an issue/feedback with the Teams Forwarding. To help us diagnose any problems quickly, provide the logs under:
+To help diagnose any problems quickly, the function writes a zip file for every interval logs under:
 
 `explorer "\$home\\.AzsMgmtTeams"`
 
-Forward the zip with the first timestamp after the occurrence of the issue and include a screengrab of the issue in your teams channel.
+Look in the zip with the first timestamp after the occurrence of the issue.  If you are working with support, provide the whole folder to support.
+Files inside the archive:
+- AzsTeamsIntegration.txt - PS Console output
+- StampInformation.json - Azure Stack Stamp Information
+- TeamAudienceMessageContent.json - Adaptive Card sent to audience channel (use https://www.adaptivecards.io/designer/ for debugging)
+- TeamOperatorMessageContent.json - Adaptive Card sent to operator channel (use https://www.adaptivecards.io/designer/ for debugging)
+- UpdateData.json - Get-AzsUpdate output
+- UpdateRun.json - latest/current update run Get-AzsUpdateRun output
+
 
 #### Common Issues
 
@@ -179,6 +184,6 @@ Connect-AzsArmEndpoint -stamp $stampName #satisfy the authentication prompt
 Get-AzsUpdate
 ```
 
-If the above is success you should see a list of updates applying or applicable to the stamp. The Watch-AzsUpdate command can be restarted.
+If the above is successful you should see a list of updates applying or applicable to the stamp in powershell. The Watch-AzsUpdate command can be restarted.
 
 Thank you for helping us test this is tool.
