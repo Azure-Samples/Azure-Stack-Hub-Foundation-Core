@@ -75,7 +75,7 @@ For the environment creation, we've used a combination of PowerShell scripts, Az
 
 You can take the scripts, adjust them to your workloads, and test the product you want on your environment.
 
-The full list of scripts can be found here: `link`
+The full list of scripts can be found here: [ARMtemplates](https://github.com/rtibi/Azure-Stack-Hub-Foundation-Core/tree/master/BCDR-validation/ARMtemplates)
 
 ## Results
 
