@@ -1,0 +1,70 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "sqlAuthUserName": {
+            "type": "string"
+        },
+        "sqlAuthPassword": {
+            "type": "securestring"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachineName'), copyIndex('virtualMachineLoop'), '/SqlVmIaasExtension')]",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "virtualMachineLoop"
+            },
+            "location": "[parameters('location')]",
+            "properties": {
+                "type": "SqlIaaSAgent",
+                "publisher": "Microsoft.SqlServer.Management",
+                "typeHandlerVersion": "1.2",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "AutoTelemetrySettings": {
+                        "Region": "[parameters('location')]"
+                    },
+                    "AutoPatchingSettings": {
+                        "PatchCategory": "WindowsMandatoryUpdates",
+                        "Enable": false,
+                        "DayOfWeek": "Sunday",
+                        "MaintenanceWindowStartingHour": "2",
+                        "MaintenanceWindowDuration": "60"
+                    },
+                    "AutoBackupSettings": {
+                        "Enable": false,
+                        "RetentionPeriod": "30",
+                        "EnableEncryption": false
+                    }
+                },
+                "protectedSettings": {
+                    "SQLAuthUpdateUserName": "[parameters('sqlAuthUserName')]",
+                    "SQLAuthUpdatePassword": "[parameters('sqlAuthPassword')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+
+    }
+}

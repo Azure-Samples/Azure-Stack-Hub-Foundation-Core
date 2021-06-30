@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "domainName": {
+            "type": "string"
+        },
+        "sqlAOPrepareModulesURL": {
+            "type": "string"
+        },
+        "sqlAOPrepareConfigurationFunction": {
+            "type": "string"
+        },
+        "sqlAOEPName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountUserName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountPassword": {
+            "type": "securestring"
+        },
+        "numberOfDisks": {
+            "type": "int"
+        },
+        "workloadType": {
+            "type": "string",
+            "defaultValue": "GENERAL"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachineName'), copyIndex('virtualMachineLoop'), '/sqlAOPrepare')]",
+            "copy": {
+                "batchSize": "[sub(parameters('deploymentsAtOnce'), 1)]",
+                "count": "[sub(parameters('virtualMachineAmount'), 1)]",
+                "mode": "Serial",
+                "name": "virtualMachineLoop"
+            },
+            "location": "[parameters('location')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.76",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "modulesURL": "[parameters('sqlAOPrepareModulesURL')]",
+                    "configurationFunction": "[parameters('sqlAOPrepareConfigurationFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('domainName')]",
+                        "sqlAlwaysOnEndpointName": "[parameters('sqlAOEPName')]",
+                        "adminCreds": {
+                            "userName": "[parameters('adminUserName')]",
+                            "password": "privateSettingsRef:AdminPassword"
+                        },
+                        "sqlServiceCreds": {
+                            "userName": "[parameters('sqlServerServiceAccountUserName')]",
+                            "password": "privateSettingsRef:SqlServerServiceAccountPassword"
+                        },
+                        "NumberOfDisks": "[parameters('numberOfDisks')]",
+                        "WorkloadType": "[parameters('workloadType')]"
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "sqlServerServiceAccountPassword": "[parameters('sqlServerServiceAccountPassword')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+
+    }
+}

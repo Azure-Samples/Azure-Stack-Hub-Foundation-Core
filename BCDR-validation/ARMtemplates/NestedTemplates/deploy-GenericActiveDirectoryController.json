@@ -1,0 +1,137 @@
+ {
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Administrator of the new VMs and Domain"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password for the Administrator account of the new VMs and Domain"
+            }
+        },
+        "subnetRef": {
+            "type": "string"
+        },
+        "ActiveDirectoryParameters": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "assetLocation": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/ad-non-ha",
+        "adPDCModulesURL": "[concat(variables('assetLocation'),'/CreateADPDC.ps1.zip')]",
+        "adPDCConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('ActiveDirectoryParameters').VirtualMachineName,'/InstallDomainController')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "dependson": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('ActiveDirectoryParameters').VirtualMachineName)]"
+            ],
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.8",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "modulesUrl": "[variables('adPDCModulesURL')]",
+                    "configurationFunction": "[variables('adPDCConfigurationFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('ActiveDirectoryParameters').DomainName]",
+                        "adminCreds": {
+                            "userName": "[parameters('adminUserName')]",
+                            "password": "PrivateSettingsRef:adminPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[parameters('ActiveDirectoryParameters').NetworkInterfaceName]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourcegroup().location]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[parameters('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[parameters('ActiveDirectoryParameters').ActiveDirectoryControllerStaticIP]"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+            ]
+        },
+        {
+            "name": "[parameters('ActiveDirectoryParameters').VirtualMachineName]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('ActiveDirectoryParameters').NetworkInterfaceName)]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('ActiveDirectoryParameters').VirtualMachineSize]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('ActiveDirectoryParameters').VirtualMachineName]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('ActiveDirectoryParameters').Publisher]",
+                        "offer": "[parameters('ActiveDirectoryParameters').Offer]",
+                        "sku": "[parameters('ActiveDirectoryParameters').SKU]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('ActiveDirectoryParameters').VirtualMachineName, '-OSDISK-01')]",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('ActiveDirectoryParameters').VirtualDiskStorageAccountType]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "[concat(parameters('ActiveDirectoryParameters').VirtualMachineName, '-DATADISK-01')]",
+                            "managedDisk": {
+                                "storageAccountType": "[parameters('ActiveDirectoryParameters').VirtualDiskStorageAccountType]"
+                            },
+                            "createOption": "Empty",
+                            "caching": "None",
+                            "diskSizeGB": "[parameters('ActiveDirectoryParameters').VirtualDiskSize]",
+                            "lun": 0
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('ActiveDirectoryParameters').NetworkInterfaceName)]"
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

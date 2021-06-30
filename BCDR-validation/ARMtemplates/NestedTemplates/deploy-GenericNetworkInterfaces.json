@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "subnetRef": {
+            "type": "string"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        },
+        "nicSuffix": {
+            "type": "string"
+        },
+        "virtualMachinePrefix": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "startIndex": {
+            "type": "int"
+        }
+    },
+    "functions": [],
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "virtualMachineLoop"
+            },
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')), '-', parameters('nicSuffix'))]",
+            "apiVersion": "2017-10-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[parameters('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        }
+    ],
+    "outputs": {}
+}

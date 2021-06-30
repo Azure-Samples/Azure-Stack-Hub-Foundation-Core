@@ -1,0 +1,125 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "imageOffer": {
+            "type": "string"
+        },
+        "imagePublisher": {
+            "type": "string"
+        },
+        "diskSizeGB": {
+            "type": "int"
+        },
+        "diskAmount": {
+            "type": "int"
+        },
+        "imageSKU": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "storageAccountType": {
+            "type": "string"
+        },
+        "nicSuffix": {
+            "type": "string"
+        },
+        "virtualMachinePrefix": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        },
+        "startIndex": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "storagePrefix": "[toLower(parameters('virtualMachinePrefix'))]",
+        "location": "[parameters('location')]",
+        "OSDiskName": "osdisk",
+        "storageAccountType": "[parameters('storageAccountType')]",
+        "vmStorageAccountContainerName": "vhds"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "copy": {
+                "name": "storageLoop",
+                "count": "[parameters('virtualMachineAmount')]"
+            },
+            "name": "[concat(variables('storagePrefix'), add(copyIndex(), parameters('startIndex')))]",
+            "location": "[variables('location')]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            },
+            "kind": "Storage"
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')))]",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "virtualMachineLoop"
+            },
+            "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', concat(variables('storagePrefix'), add(copyIndex(), parameters('startIndex'))))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')))]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('imagePublisher')]",
+                        "offer": "[parameters('imageOffer')]",
+                        "sku": "[parameters('imageSKU')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat('osdisk-', parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')))]",
+                        "vhd": {
+                            "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', concat(variables('storagePrefix'), add(copyIndex(), parameters('startIndex')))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob, variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    },
+                    "dataDisks": [
+
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')), '-', parameters('nicSuffix')))]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

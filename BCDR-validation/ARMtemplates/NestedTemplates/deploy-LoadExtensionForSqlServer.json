@@ -1,0 +1,50 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "LoadExtensionForSqlServerScript": {
+            "type": "string"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        },
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "LoadExtensionForSqlServerScriptName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachineName'), copyIndex('virtualMachineLoop'), '/CustomScriptExtension')]",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "virtualMachineLoop"
+            },
+            "dependsOn": [
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('LoadExtensionForSqlServerScript')]"
+                    ],
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('LoadExtensionForSqlServerScriptName'))]"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,150 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "virtualMachinePrefix": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "startIndex": {
+            "type": "int"
+        },
+        "sqlConnectivityType": {
+            "type": "string",
+            "defaultValue": "Private"
+        },
+        "sqlPortNumber": {
+            "type": "int",
+            "defaultValue": 1433
+        },
+        "sqlStorageDisksCount": {
+            "type": "int"
+        },
+        "sqlStorageWorkloadType": {
+            "type": "string",
+            "defaultValue": "GENERAL"
+        },
+        "sqlStorageDisksConfigurationType": {
+            "type": "string",
+            "defaultValue": "NEW"
+        },
+        "sqlStorageStartingDeviceId": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "sqlAuthenticationLogin": {
+            "type": "string"
+        },
+        "LoadExtensionForSqlServerScript": {
+            "type": "string"
+        },
+        "LoadExtensionForSqlServerScriptName": {
+            "type": "string"
+        },
+        "sqlAuthenticationPassword": {
+            "type": "securestring"
+        },
+        "rServicesEnabled": {
+            "type": "string",
+            "defaultValue": "false"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('ExtensionLoop'), parameters('startIndex')), '/SqlIaasExtension')]",
+            "location": "[parameters('location')]",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "ExtensionLoop"
+            },
+            "dependsOn": [
+            ],
+            "properties": {
+                "type": "SqlIaaSAgent",
+                "publisher": "Microsoft.SqlServer.Management",
+                "typeHandlerVersion": "1.2",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "AutoTelemetrySettings": {
+                        "Region": "[parameters('location')]"
+                    },
+                    "AutoPatchingSettings": {
+                        "PatchCategory": "WindowsMandatoryUpdates",
+                        "Enable": false,
+                        "DayOfWeek": "Sunday",
+                        "MaintenanceWindowStartingHour": "2",
+                        "MaintenanceWindowDuration": "60"
+                    },
+                    "KeyVaultCredentialSettings": {
+                        "Enable": false,
+                        "CredentialName": ""
+                    },
+                    "ServerConfigurationsManagementSettings": {
+                        "SQLConnectivityUpdateSettings": {
+                            "ConnectivityType": "[parameters('sqlConnectivityType')]",
+                            "Port": "[parameters('sqlPortNumber')]"
+                        },
+                        "SQLWorkloadTypeUpdateSettings": {
+                            "SQLWorkloadType": "[parameters('sqlStorageWorkloadType')]"
+                        },
+                        "SQLStorageUpdateSettings": {
+                            "DiskCount": "[parameters('sqlStorageDisksCount')]",
+                            "NumberOfColumns": "[parameters('sqlStorageDisksCount')]",
+                            "StartingDeviceID": "[parameters('sqlStorageStartingDeviceId')]",
+                            "DiskConfigurationType": "[parameters('sqlStorageDisksConfigurationType')]"
+                        },
+                        "AdditionalFeaturesServerConfigurations": {
+                            "IsRServicesEnabled": "[parameters('rServicesEnabled')]"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "SQLAuthUpdateUserName": "[parameters('sqlAuthenticationLogin')]",
+                    "SQLAuthUpdatePassword": "[parameters('sqlAuthenticationPassword')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('ExtensionLoop'), parameters('startIndex')), '/CustomScriptExtension')]",
+            "copy": {
+                "batchSize": "[parameters('deploymentsAtOnce')]",
+                "count": "[parameters('virtualMachineAmount')]",
+                "mode": "Serial",
+                "name": "ExtensionLoop"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines', '/' , parameters('virtualMachinePrefix'), '-', add(copyIndex('ExtensionLoop'), parameters('startIndex')), '/extensions', '/SqlIaasExtension')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('LoadExtensionForSqlServerScript')]"
+                    ],
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('LoadExtensionForSqlServerScriptName'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

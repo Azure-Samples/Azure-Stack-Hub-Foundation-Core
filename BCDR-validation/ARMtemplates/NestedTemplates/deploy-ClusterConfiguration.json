@@ -1,0 +1,150 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "SqlVirtualMachineName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "domainName": {
+            "type": "string"
+        },
+        "sqlAOEPName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountUserName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountPassword": {
+            "type": "securestring"
+        },
+        "createClusterModulesURL": {
+            "type": "string"
+        },
+        "createClusterConfigurationFunction": {
+            "type": "string"
+        },
+        "clusterName": {
+            "type": "string"
+        },
+        "sharePath": {
+            "type": "string"
+        },
+        "sqlAOAGName": {
+            "type": "string"
+        },
+        "sqlAOListenerName": {
+            "type": "string"
+        },
+        "sqlAOListenerPort": {
+            "type": "string"
+        },
+        "sqlLBName": {
+            "type": "string"
+        },
+        "sqlLBIPAddress": {
+            "type": "string"
+        },
+        "ActiveDirectoryController": {
+            "type": "string"
+        },
+        "FileShareWitnessName": {
+            "type": "string"
+        },
+        "numberOfDataDisks": {
+            "type": "int"
+        },
+        "workloadType": {
+            "type": "string"
+        },
+        "databaseName": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "copy": [
+            {
+                "name": "VirtualMachineNameArray",
+                "count": "[parameters('virtualMachineAmount')]",
+                "input": {
+                    "NameScheme": "[concat(parameters('SqlVirtualMachineName'), copyIndex('VirtualMachineNameArray'))]"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('SqlVirtualMachineName'),'1/configuringAlwaysOn')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.76",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "modulesURL": "[parameters('createClusterModulesURL')]",
+                    "configurationFunction": "[parameters('createClusterConfigurationFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('domainName')]",
+                        "clusterName": "[parameters('clusterName')]",
+                        "sharePath": "[concat('\\\\',parameters('FileShareWitnessName'),'\\',parameters('sharePath'))]",
+                        "nodes": [
+                            "[variables('VirtualMachineNameArray')[0].NameScheme]",
+                            "[variables('VirtualMachineNameArray')[1].NameScheme]"
+                        ],
+                        "sqlAlwaysOnEndpointName": "[parameters('sqlAOEPName')]",
+                        "sqlAlwaysOnAvailabilityGroupName": "[parameters('sqlAOAGName')]",
+                        "sqlAlwaysOnAvailabilityGroupListenerName": "[parameters('sqlAOListenerName')]",
+                        "SqlAlwaysOnAvailabilityGroupListenerPort": "[parameters('sqlAOListenerPort')]",
+                        "databaseNames": "[parameters('databaseName')]",
+                        "lbName": "[parameters('sqlLBName')]",
+                        "lbAddress": "[parameters('sqlLBIPAddress')]",
+                        "primaryReplica": "[variables('VirtualMachineNameArray')[1].NameScheme]",
+                        "secondaryReplica": "[variables('VirtualMachineNameArray')[0].NameScheme]",
+                        "dnsServerName": "[parameters('ActiveDirectoryController')]",
+                        "adminCreds": {
+                            "userName": "[parameters('adminUserName')]",
+                            "password": "privateSettingsRef:adminPassword"
+                        },
+                        "sqlServiceCreds": {
+                            "userName": "[parameters('sqlServerServiceAccountUserName')]",
+                            "password": "privateSettingsRef:sqlServerServiceAccountPassword"
+                        },
+                        "SQLAuthCreds": {
+                            "userName": "sqlsa",
+                            "password": "privateSettingsRef:sqlAuthPassword"
+                        },
+                        "NumberOfDisks": "[parameters('numberOfDataDisks')]",
+                        "WorkloadType": "[parameters('workloadType')]"
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "sqlServerServiceAccountPassword": "[parameters('sqlServerServiceAccountPassword')]",
+                        "sqlAuthPassword": "[parameters('sqlServerServiceAccountPassword')]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+
+    }
+}

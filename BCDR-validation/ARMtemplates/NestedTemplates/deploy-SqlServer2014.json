@@ -1,0 +1,118 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "virtualMachineAmount": {
+            "type": "int"
+        },
+        "virtualMachinePrefix": {
+            "type": "string"
+        },
+        "deploymentsAtOnce": {
+            "type": "int"
+        },
+        "startIndex": {
+            "type": "int"
+        },
+        "deploySqlStandaloneModulesURL": {
+            "type": "string"
+        },
+        "deploySqlStandaloneConfigurationFunction": {
+            "type": "string"
+        },
+        "sqlInstallationISOUri": {
+            "type": "string"
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "domainName": {
+            "type": "string"
+        },
+        "primaryAdIpAddress": {
+            "type": "string"
+        },
+        "LoadExtensionForSqlServerScript": {
+            "type": "string"
+        },
+        "LoadExtensionForSqlServerScriptName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "copy": {
+                "count": "[parameters('virtualMachineAmount')]",
+                "name": "ExtensionLoop"
+            },
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('ExtensionLoop'), parameters('startIndex')), '/SqlServer2014Iaas')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.8",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "modulesUrl": "[parameters('deploySqlStandaloneModulesURL')]",
+                    "configurationFunction": "[parameters('deploySqlStandaloneConfigurationFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('domainName')]",
+                        "primaryAdIpAddress": "[parameters('primaryAdIpAddress')]",
+                        "sqlInstallationISOUri": "[parameters('sqlInstallationISOUri')]",
+                        "adminCreds": {
+                            "userName": "[parameters('adminUsername')]",
+                            "password": "PrivateSettingsRef:adminPassword"
+                        },
+                        "sqlServiceCreds": {
+                            "userName": "sa",
+                            "password": "PrivateSettingsRef:sqlServerServiceAccountPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "sqlServerServiceAccountPassword": "[parameters('adminPassword')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-06-15",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')), '/CustomScriptExtension')]",
+            "copy": {
+                "count": "[parameters('virtualMachineAmount')]",
+                "name": "virtualMachineLoop"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines', '/', parameters('virtualMachinePrefix'), '-', add(copyIndex('virtualMachineLoop'), parameters('startIndex')), '/extensions', '/SqlServer2014Iaas')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.4",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[parameters('LoadExtensionForSqlServerScript')]"
+                    ],
+                    "commandToExecute": "[concat('powershell -ExecutionPolicy Unrestricted -file ', parameters('LoadExtensionForSqlServerScriptName'))]"
+                }
+            }
+        }
+    ]
+}
