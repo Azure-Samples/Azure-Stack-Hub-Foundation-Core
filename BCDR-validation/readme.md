@@ -98,9 +98,9 @@ The full list of scripts can be found here: [ARMtemplates](https://github.com/rt
 
 | Scenario                    | AzStackHub Version (each stamp) | Commvault version |
 |-----------------------------|---------------------------------|-------------------|
-| AzStackHub to AzStackHub    | 1.2102.11.40                    |                   |
-| Migrate between AzStackHubs | 1.2102.11.40                    |                   |
-| Migrate to AzStackHub       | 1.2102.11.40                    |                   |
+| AzStackHub to AzStackHub    | 1.2102.11.40                    |11.23              |
+| Migrate between AzStackHubs | 1.2102.11.40                    |11.23              |
+| Migrate to AzStackHub       | 1.2102.11.40                    |11.23              |
 
 [Link to full results doc](commvault_results_round1.md)
 
