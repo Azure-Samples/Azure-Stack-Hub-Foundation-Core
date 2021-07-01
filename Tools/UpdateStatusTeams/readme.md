@@ -68,7 +68,7 @@ Open PowerShell 7 and run the following:
 Install-Module -Name Az.BootStrapper -Force
 Get-AzApiProfile -Update
 Install-AzProfile -Profile 2020-09-01-hybrid -Force
-Install-Module -Name AzureStack -RequiredVersion 2.1.0
+Install-Module -Name AzureStack -RequiredVersion 2.1.1
 Install-Module -Name Azs.Operator -RequiredVersion 0.1.2-preview -AllowPrerelease -AllowClobber
 Install-Module -Name Azs.TeamsIntegration -AllowPrerelease -Force
 ```
