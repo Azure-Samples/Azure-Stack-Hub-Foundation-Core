@@ -62,13 +62,18 @@ A dialog box will appear, finish the installation using all defaults.
 
 #### Install Az/AzureStack modules
 
-Open PowerShell 7 and run the following:
+Open PowerShell 7 and install the Az & Azure Stack powershell modules according to your current version:
 
+ - [Install PowerShell Az module for Azure Stack Hub 2102](https://docs.microsoft.com/en-us/azure-stack/operator/powershell-install-az-module?view=azs-2102)
+
+ - [Install PowerShell Az module for Azure Stack Hub 2008](https://docs.microsoft.com/en-us/azure-stack/operator/powershell-install-az-module?view=azs-2008)
+
+ - [Install PowerShell Az module for Azure Stack Hub 2005](https://docs.microsoft.com/en-us/azure-stack/operator/powershell-install-az-module?view=azs-2005)
+
+ - [Install PowerShell Az module for Azure Stack Hub 2002](https://docs.microsoft.com/en-us/azure-stack/operator/powershell-install-az-module?view=azs-2002)
+
+Then install Azs.Operator and Azs.TeamsIntegration modules
 ```powershell
-Install-Module -Name Az.BootStrapper -Force
-Get-AzApiProfile -Update
-Install-AzProfile -Profile 2020-09-01-hybrid -Force
-Install-Module -Name AzureStack -RequiredVersion 2.1.0
 Install-Module -Name Azs.Operator -RequiredVersion 0.1.2-preview -AllowPrerelease -AllowClobber
 Install-Module -Name Azs.TeamsIntegration -AllowPrerelease -Force
 ```
