@@ -1,23 +1,23 @@
 # Veeam Backup and Replication
 
-Veeam Backup and Replication is a comprehensive data protection and disaster recovery solution. With Veeam Backup and Replication, you can create image-level backups of virtual, physical, cloud machines and restore from them. Technology used in the product optimizes data transfer and resource consumption, which helps to minimize storage costs and the recovery time in case of a disaster.
+Veeam Backup & Replication is a comprehensive data protection and disaster recovery solution. Providing a simple, flexible & reliable solution to protect your virtual, physical and cloud workloads, unstructured file data, enterprise apps and more. 
 
-Veeam Backup and Replication provides a centralized console for administering backup, restore, and replication operations in all supported platforms (virtual, physical, and cloud). Also, the console allows you to automate and schedule routine data protection operations and integrate with solutions for alerting and generating compliance reports.
+You can backup and restore workloads running on Azure Stack Hub using Veeam Agent for Windows and Veeam Agent for Linux. These can be [centrally managed](https://helpcenter.veeam.com/docs/backup/agents/quickstart.html) with Veeam Backup & Replication. Restore operations are performed using [Direct Restore to Microsoft Azure Stack](https://helpcenter.veeam.com/docs/backup/vsphere/restore_azure_process.html). By providing a centralized console for administering backup, restore and replication, Veeam allows you to automate and schedule routine data protection operations and integrate with solutions for alerting and generating compliance reports.
 
 ## Documentation
 
 Veeam Documentation:
 
- - [Overview - Integration with Veeam Backup for Microsoft Azure Guide](https://helpcenter.veeam.com/docs/backup/azure_integration/overview.html?ver=110)
- - Veeams documentation provides information about deploying, configuring and using Veeam Backup and Replication with Azure Stack Hub.
+ - [Veeam Support for Azure Stack Hub](https://www.veeam.com/kb3244)
+ - Veeam's documentation provides information about deploying, configuring, and using Veeam Backup & Replication with Azure Stack Hub.
 
 Veeam sizing
 
- - Veeam Backup and Replication is sized by total capacity and throughput requirements for a customer's Azure Stack Hub environment.
+ - Veeam Backup & Replication is sized by total capacity and throughput requirements for a customer's Azure Stack Hub environment.
 
 Contact
 
- - For more information contact Cohesity: `contact@veeam.com`
+ - For more information contact [Veeam Support](https://www.veeam.com/support.html).
 
 ## Test scenarios
 
@@ -27,22 +27,29 @@ Contact
 | Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.873    |
 | Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.873    |
 
-## The build
 
-1.  Veeam Backup and Replication v11 with latest cumulative patch
+## Veeam Support for Azure Stack Hub
+
+Veeam support for Azure Stack Hub allows you to back up workloads using Veeam Agents for Windows and Linux, centrally manged by Veeam Backup & Replication. Agent-based backup allows for additional application-consistency features, and with Veeam Backup & Replication there is native agent-less restore available, direct to Azure Stack Hub. You can tier backup data from a repository on Azure Stack Hub for example, to external storage, or send it there directly. Then as a secondary tier you can use Azure Blob with hot, cool and archive tier support, with the ability to directly restore workloads in Azure as Azure VMs. Veeam offers cross-platform support, meaning you can restore dissimilar workloads from external sources, such as virtual workloads, including VMware, Hyper-V, AHV, as well as physical and cloud-based workloads to Azure Stack Hub.
+
+![Veeam Support for Azure Stack Hub](./media/veeam-azure-stack-hub-20210706.png)
+
+## Test environment
+
+1.  Veeam Backup & Replication v11 with latest cumulative patch
     1.  Machine type: Standard F32s_v2
     2.  Machine resources: 32 vcpus, 64 GiB memory
-2.  Windows machine as Veeam Windows Repository
+2.  Windows machine as Veeam Backup Repository
     1.  Machine type: Standard F64s_v2
     2.  Machine resources: 64 vcpus, 128 GiB memory
     3.  Backup volume was created as spanned volume from 4 1023 GB Premium SSD disks
 
 > [!Note]
-> Similar machines for Veeam Backup and Replication and Windows repository were deployed at both stamps
+> Similar machines for Veeam Backup & Replication and the Backup Repository were deployed at both stamps
 
 1.  Arbitrary storage -- Synology NAS
-    1.  Added as SMB repository to Veeam Backup and Replication server
-    2.  Veeam Backup and Replication acts as a gateway server
+    1.  Added as SMB repository to Veeam Backup & Replication server
+    2.  Veeam Backup & Replication acts as a gateway server
 2.  Source machines
  - 100 Standard_A1_v2 (no data disks)
  - 100 Standard_F4s (no data disks)
@@ -82,58 +89,22 @@ Contact
     1.  We used mostly default settings and same machine type as the source one
     2.  Stamp 1: Windows repository was the restore source
     3.  Stamp 2: Arbitrary SMB repository was the restore source
-    4.  To restore from arbitrary SMB repository [backups can be imported to a new / another Veeam Backup and Replication server](https://helpcenter.veeam.com/docs/backup/vsphere/importing_backups.html?ver=110)
+    4.  To restore from arbitrary SMB repository [backups can be imported to a new / another Veeam Backup & Replication server](https://helpcenter.veeam.com/docs/backup/vsphere/importing_backups.html?ver=110)
 
-## Issues & workarounds:
+## Issues and workarounds:
 
-### Must be added:
+A few configuration changes are needed for Azure Stack Hub. For an up-to-date list visit [KB3244: Veeam Support for Azure Stack Hub](https://www.veeam.com/kb3244).
 
-1.  Direct Recovery to Azure to Azure Stack Hub requires exact version of the API to be specified due to the to the difference with public Azure API
-
-    Recommendation: add registry key if you plan to restore to Azure Stack. <https://www.veeam.com/kb3244>
-
-    1.  False positive ReFS detection for SMB share.
-
-        Recommendation: add registry key if you plan to restore to Azure Stack.
-
-        ```
-        HKEY_LOCAL_MACHINE\\SOFTWARE\\Veeam\\Veeam Backup and Replication
-
-        DWORD UseCifsVirtualSynthetic = 0
-        ```
-
-
-### No workaround:
-
-1.  F2SV2 - heavily loaded machines with running scripts were excluded from tests. Script occupies all the RAM which prevents agent process to start.
-
-    Recommendation: to plan the backup window when application is not consuming all resources or pre-allocate at least 2GB of RAM just for agent
-
-### Can be ignored:
-
-1.  Inability to collect recovery media components. Expected behavior -- Windows images in Azure do not contain RE/ADK components, Recovery Media iso cannot be mounted anyway, so such warning should be ignored
-
-    Recommendation: add registry key to suppress the Recovery Media component warning.
-
-    ```
-    HKEY_LOCAL_MACHINE\\SOFTWARE\\Veeam\\Veeam Backup and Replication
-
-    DWORD AgentsDisableRECollectionWarning
-    ````
-
-1.  Linux backup jobs constantly report warning whenever EFI volume was not detected.
-
-    Recommendation: This is currently being investigated. Linux images in Azure can sometimes have various boot partitions set.
-
-> [!Note]  
-> Work is being done to investigate a workaround to add warning suppression logic and a fix for the ReFS detection logic issue. This may be addressed in future versions of the product.
+Backup jobs may report warnings whenever an EFI volume was not detected due to partition layout differences with Linux images in Azure. You can safely ignore this and this may be addressed in future versions of the product.
 
 ## Tests
 
 > [!Note]  
-> Processing rates are a function of the scale of the environment, the throughput capacity and the number of parallel jobs that can be processed simultaneously. Veeam works efficiently in environments of a much larger scale, with some incredibly high throughput numbers and so these numbers below are more a reflection of the current environments state than anything else. These results only highlight what was possible with this specific environment during the time of testing. Backup - Single machines.
+> Processing rates are a function of the scale of the environment, the throughput capacity and the number of parallel jobs that can be processed simultaneously. Veeam works efficiently in environments of a much larger scale, with some incredibly high throughput numbers and so these numbers below are more a reflection of the current environments state than anything else. These results only highlight what was possible with this specific environment during the time of testing. 
 
 ### Same Azure Stack Hub Stamp, within one subscription
+
+### Backup - Single machines
 
 | Machine name | Size    | Full backup time | Processing rate | Restore point size | Incremental backup time | Processing rate | Restore point size |
 |--------------|---------|------------------|-----------------|--------------------|-------------------------|-----------------|--------------------|
@@ -142,6 +113,8 @@ Contact
 | D3V2         | 346 GB  | 20m 52s          | 30 MB/s         | 18.4GB             | 4m 49s                  | 46MB/s          | 712MB              |
 | DS14v2       | 370 GB  | 10m 35s          | 72 MB/s         | 18.6 GB            | 2m 34s                  | 111 MB/s        | 538MB              |
 | DS5v2        | 258 GB  | 8m 37s           | 83MB/s          | 16 GB              | 2m 33s                  | 92 MB/s         | 200MB              |
+
+> [!Note] For testing machine type F2SV2 under a heavy load with running scripts were excluded. This script occupies all available RAM which prevents the agent process from starting. Recommendation: Plan the backup window when the application is not consuming all resources or pre-allocate at least 2GB of RAM just for the agent. 
 
 #### Restore - Single machines
 
@@ -163,7 +136,7 @@ Contact
 | 100 VMs - A1V2 - Win  | 4000 GB | 1h 53m           | 34m                                  | 218 MB/s        | 860GB              | 19m 40s                 | 4m                                   | 348 MB/s        | 23GB               |
 | 100 VMs - F4S - Lin   | 460 GB  | 1h 30m           | 6m 30s                               | 87 MB/s         | 107 GB             | 13m 12s                 | 2m 10s                               | 14 MB/s         | 2GB                |
 
- - We've repeated the test for 100 Win machines with repository set to 50 tasks and result was the same without any performance increase. We suspect that network becomes the bottleneck (as network consumption at the repository side never crosses 15GBs in our tests)
+ - We've repeated the test for 100 Windows machines with repository set to 50 tasks and result was the same without any performance increase. We suspect that network becomes the bottleneck (as network consumption at the repository side never crosses 15GBs in our tests)
  - The only benefit was for Linux hosts since they have a smaller footprint and less disks thus can be processed faster
 
 | 100 VMs - A1V2 - Win  | 4000 GB | 1h 53m  | 34m    | 218 MB/s | 860GB  | 19m 40s | 4m     | 348 MB/s | 23GB |
@@ -182,8 +155,8 @@ Contact
 
 ### Same Azure Stack Hub Stamp, different subscriptions
 
- - We've run only a few backup / restore tests to see the difference from previous test - metrics were pretty much the same
- - In terms of benchmarking please consider same subscription or multiple subscription test results within one stamp identical
+ - We ran only a few backup and restore tests to see if there was any difference from previous tests - metrics were pretty much the same
+ - In terms of benchmarking please consider that test results from the same subscription or multiple subscriptions within one stamp would be identical
 
 #### Backup -- single machine
 
@@ -205,11 +178,15 @@ Contact
 | 100 VMs - A1V2 - Win  | 4000 GB | 1h 55m           | 25m                                  | 219 MB/s        |
 | 100 VMs - F4S - Lin   | 460 GB  | 1h 35m           | 6m 10s                               | 88 MB/s         |
 
-### From Azure Stack Hub Stamp 1 to Arbitrary SMB storage, restore to Azure Stack Hub Stamp 2 from SMB storage
+### From Azure Stack Hub Stamp 1 to SMB storage, restore to Azure Stack Hub Stamp 2 from SMB storage
+You can use Veeam Backup & Replication to restore and or migrate data from one Azure Stack Hub stamp to another.
 
- - Agents require direct connection with repository, so for this scenario we've used arbitrary SMB storage as a target for backup and restore
+![Veeam Support for Azure Stack Hub](./media/veeam-azure-stack-hub-cross-stamp-20210706.png)
+ 
+ - Throughput numbers highlight what was possible with this specific environment during the time of testing.
+ - Agents require direct connection with repository, so for this scenario we've used an arbitrary SMB storage repository as a target for backup and restore
  - Possible scenarios to test in the future: VPN from stamp 1 to stamp 2
- - For such setup Veeam Backup and Replication in Stamp 1 acted as a gateway server for SMB share
+ - For such setup Veeam Backup & Replication in Stamp 1 acted as a gateway server for SMB share
  - Only two cases (single machine & 100 x machines backup/restore) were tested due to lack of time
 
 #### Backup - Single machine
