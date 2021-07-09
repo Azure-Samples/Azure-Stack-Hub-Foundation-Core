@@ -1,4 +1,5 @@
-# Commvault
+![Commvault Logo](./media/commvault-Picture1.png)
+
 
 ## Overview
 
@@ -7,22 +8,31 @@ The software platform is an enterprise level, integrated data and information ma
 ## Documentation
 
  - Links to product documentation
-     - [Microsoft Azure Stack Hub (commvault.com)](https://documentation.commvault.com/commvault/v11/article?p=86486.htm)
-     - Guides for installation and configuration (especially the ones used for the tests below basic/medium/heavy)
+     - [Microsoft Azure Stack Hub (commvault.com)](https://documentation.commvault.com/11.23/essential/121684_microsoft_azure_stack_hub.html)
+     - The documentation provides all necessary installation and configuration requirements
 
- - Contact points
+ - Contact points - microsoft@commvault.com
+
+
+## Architecture
+
+![overall architecture](./media/cv-Picture2.png)
 
 ## Test scenarios
 
-| Scenario                    | Azure Stack Hub Version (each stamp) | 3P version | test     | Outcome (time, issues, other) |
-|-----------------------------|---------------------------------|------------|----------|-------------------------------|
-| AzStackHub to AzStackHub    | 1.2102.11.40                    |            |          |                               |
-| Migrate between AzStackHubs | 1.2102.11.40                    |            |          |                               |
-| Migrate to AzStackHub       | 1.2102.11.40                    |            | (origin) |                               |
+Commvault offers a distributed architectural design which allows you to scale up\down or scale-out the management hardware based on the data size and RPO\RTO of the customer.  The tests outlined below were performed with performance and cost in mind.  If the desire is for a shorter RPO\RTO, additional hardware can be used.  
+
+> For example, in the design below the data mover server uses a Standard F16s_v2 Azure VM size.  The VM size can be scaled up to obtain 2x Network Bandwidth\CPU\Memory and therefore a faster (shorter) backup and recovery duration.  
+
+| Scenario                    | Azure Stack Hub Version (each stamp) | 3P version |
+|-----------------------------|---------------------------------|------------|
+| AzStackHub to AzStackHub    | 1.2102.11.40                    |   11.23         |
+| Migrate between AzStackHubs | 1.2102.11.40                    |   11.23         |
+| Migrate to AzStackHub       | 1.2102.11.40                    |    11.23        | 
 
 **Test Results**
 
-Environment:  Commvault Version SP23
+Environment:  Commvault Version 11.23
 
 CommServe + WebServer packages Installed on Azure Stack VM with Size Standard F8s_v2 (8 vcpus, 16 GiB memory)
 
