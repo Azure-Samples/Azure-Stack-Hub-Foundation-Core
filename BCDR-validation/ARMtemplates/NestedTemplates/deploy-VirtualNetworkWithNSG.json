@@ -1,0 +1,63 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+      "vnetName": {
+        "type": "String",
+        "defaultValue": "test-vnet"
+      },
+      "addressPrefix": {
+        "type": "String",
+        "defaultValue": "10.0.0.0/22"
+      },
+      "subnetName": {
+        "type": "String",
+        "defaultValue": "default"
+      },
+      "subnetPrefix": {
+        "type": "String",
+        "defaultValue": "10.0.0.0/22"
+      },
+      "location": {
+        "type": "String"
+      },
+      "nsgID": {
+        "type": "String",
+        "defaultValue": "null"
+      }
+    },
+    "variables": {
+      "vnetName": "[parameters('vnetName')]",
+      "addressPrefix": "[parameters('addressPrefix')]",
+      "subnetName": "[parameters('subnetName')]",
+      "subnetPrefix": "[parameters('subnetPrefix')]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "condition": "[not(equals(parameters('nsgID'), 'null'))]",
+        "name": "[variables('vnetName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[variables('addressPrefix')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "[variables('subnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('subnetPrefix')]",
+                "networkSecurityGroup": {
+                  "id": "[parameters('nsgID')]"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "outputs": {}
+  }

@@ -1,0 +1,103 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "ActiveDirectoryControllerIP": {
+            "type": "string"
+        },
+        "SqlServerNetworkInterfaceNamePrefix": {
+            "type": "string"
+        },
+        "sqlSubnetRef": {
+            "type": "string"
+        },
+        "sqlBEAddressPoolID": {
+            "type": "string"
+        },
+        "SqlWitnessNetworkInterfaceName": {
+            "type": "string"
+        },
+        "AmountOfSqlMachines": {
+            "type": "int"
+        },
+        "ParallelDeployments": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "copy": [
+            {
+                "name": "NetworkInterfaceNameLoop",
+                "count": "[parameters('AmountOfSqlMachines')]",
+                "input": {
+                    "NicName": "[concat(parameters('SqlServerNetworkInterfaceNamePrefix'), copyIndex('NetworkInterfaceNameLoop'), '-NIC1D')]"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "name": "[variables('NetworkInterfaceNameLoop')[copyIndex('networkInterfaceLoop')].NicName]",
+            "copy": {
+                "batchSize": "[parameters('ParallelDeployments')]",
+                "count": "[parameters('AmountOfSqlMachines')]",
+                "mode": "Serial",
+                "name": "networkInterfaceLoop"
+            },
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[parameters('location')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('sqlSubnetRef')]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[parameters('sqlBEAddressPoolID')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [
+                        "[parameters('ActiveDirectoryControllerIP')]"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[concat(parameters('SqlWitnessNetworkInterfaceName'), '-NIC1D')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[parameters('location')]",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('sqlSubnetRef')]"
+                            }
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [
+                        "[parameters('ActiveDirectoryControllerIP')]"
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+    }
+}

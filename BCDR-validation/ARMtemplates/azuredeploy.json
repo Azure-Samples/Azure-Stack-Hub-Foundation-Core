@@ -1,0 +1,1566 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "vnetName": {
+            "type": "String",
+            "defaultValue": "test-vnet",
+            "metadata": {
+                "description": "Name of the Virtual Machine - Virtual Network"
+            }
+        },
+        "jumphostvnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Jump Host - Virtual Network"
+            }
+        },
+        "subnetName": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Virtual Machine - Subnet"
+            }
+        },
+        "addressPrefix": {
+            "type": "String",
+            "metadata": {
+                "description": "Address Prefix for the Virtual Machine Virtual Network"
+            }
+        },
+        "subnetPrefix": {
+            "type": "String",
+            "metadata": {
+                "description": "Subnet Prefix for the Virtual Machine Virtual Network"
+            }
+        },
+        "jumphostSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Jump Host - Subnet"
+            }
+        },
+        "jumphostAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Address Prefix for the Jump Host Virtual Network"
+            }
+        },
+        "jumphostSubnetPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Prefix for the Jump Host Virtual Network"
+            }
+        },
+        "jumphostNetworkSecurityGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "NSG Name"
+            }
+        },
+        "nestedTemplateFolder": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage Account Container, where the nested templates are located in"
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage Account URI for the nested templates"
+            }
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "SAS Token of the artifactsLocation"
+            }
+        },
+        "vmParameters": {
+            "type": "object",
+            "defaultValue": {
+                "VirtualMachineCount": 0,
+                "VirtualMachineNamePrefix": "null",
+                "Publisher": "null",
+                "Offer": "null",
+                "SKU": "null",
+                "ManagedDisk": "null",
+                "DiskSize": 0,
+                "DiskAmount": 0,
+                "VirtualMachineSize": "null",
+                "StorageAccountType": "null",
+                "StartIndex": 0,
+                "Extension": "null",
+                "ParallelDeployments": 0
+            }
+        },
+        "clusterParameters": {
+            "type": "object",
+            "defaultValue": {
+                "AmountOfClusters": 1,
+                "AmountOfSqlDisks": 0,
+                "StartIndex": 0,
+                "IpRegionForLoadbalancers": "10.0.3.xxx",
+                "StartIp": 0,
+                "VirtualMachineNamePrefix": "default",
+                "ParallelDeployments": 1
+            }
+        },
+        "adminUsername": {
+            "type": "string"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "sql2014InstallationISOUri": {
+            "type": "string",
+            "defaultValue": "http://care.dlservice.microsoft.com/dl/download/2/F/8/2F8F7165-BB21-4D1E-B5D8-3BD3CE73C77D/SQLServer2014SP1-FullSlipstream-x64-ENU.iso"
+        },
+        "ActiveDirectoryParameters": {
+            "type": "object"
+        },
+        "JumphostParameters": {
+            "type": "object"
+        },
+        "JumphostAdmin": {
+            "type": "string"
+        },
+        "JumphostPassword": {
+            "type": "securestring"
+        },
+        "sqlServerServiceAccountUserName": {
+            "type": "string"
+        },
+        "sqlServerServiceAccountPassword": {
+            "type": "securestring"
+        }
+    },
+    "functions": [],
+    "variables": {
+        "deploymentConfig": {
+            "AmountOfSqlMachines": 2,
+            "ParallelVmDeployments": 2
+        },
+        "clusterNameScheme": {
+            "sql": "[concat(parameters('clusterParameters').VirtualMachineNamePrefix, '-')]",
+            "filesharewitness": "[concat(parameters('clusterParameters').VirtualMachineNamePrefix, '-FW')]",
+            "availabilitySet": "[concat(parameters('clusterParameters').VirtualMachineNamePrefix, '-AS')]",
+            "loadbalancer": "[concat(parameters('clusterParameters').VirtualMachineNamePrefix, '-LB')]",
+            "filesharewitness-nicname": "[concat(parameters('clusterParameters').VirtualMachineNamePrefix, '-FW-NIC1D')]"
+        },
+        "fileShareWitnessConfiguration": {
+            "imageOffer": "WindowsServer",
+            "imagePublisher": "MicrosoftWindowsServer",
+            "nicSuffix": "NIC1D"
+        },
+        "deploymentArtifacts": {
+            "FileShareWitnessConfiguration": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-FileShareWitnessConfiguration.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterSQLIaaSExtension": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterSQLIaaSExtension.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterSqlAoPrepare": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterSqlAoPrepare.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterConfiguration": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterConfiguration.json', parameters('_artifactsLocationSasToken'))]",
+            "VirtualNetwork": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-VirtualNetwork.json', parameters('_artifactsLocationSasToken'))]",
+            "VirtualNetworkWithDNS": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-VirtualNetworkWithDNS.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericVirtualMachineWithManagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericVirtualMachineWithManagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericVirtualMachineWithUnmanagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericVirtualMachineWithUnmanagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericVirtualMachineWithManagedDiskNoDatadisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericVirtualMachineWithManagedDiskNoDatadisk.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericVirtualMachineWithUnmanagedDiskNoDatadisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericVirtualMachineWithUnmanagedDiskNoDatadisk.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericActiveDirectoryController": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericActiveDirectoryController.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericNetworkSecurityGroup": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericNetworkSecurityGroup.json', parameters('_artifactsLocationSasToken'))]",
+            "VirtualNetworkPeering": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-VirtualNetworkPeering.json', parameters('_artifactsLocationSasToken'))]",
+            "VirtualNetworkWithNSG": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-VirtualNetworkWithNSG.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericJumphost": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericJumphost.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericNetworkInterfaces": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericNetworkInterfaces.json', parameters('_artifactsLocationSasToken'))]",
+            "AdJoinExtension": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-AdJoinExtension.json', parameters('_artifactsLocationSasToken'))]",
+            "SqlServer2014": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-SqlServer2014.json', parameters('_artifactsLocationSasToken'))]",
+            "SqlServerGeneral": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-SqlServerGeneral.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericAvailabilitySet": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericAvailabilitySet.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterVirtualMachineWithManagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterVirtualMachineWithManagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "GenericLoadbalancers": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-GenericLoadbalancers.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterNetworkInterface": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterNetworkInterface.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterFileWitnessWithManagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterFileWitnessWithManagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterFileWitnessWithUnmanagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterFileWitnessWithUnmanagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "ClusterVirtualMachineWithUnmanagedDisk": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-ClusterVirtualMachineWithUnmanagedDisk.json', parameters('_artifactsLocationSasToken'))]",
+            "LoadExtensionForSqlServerScriptJson": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-LoadExtensionForSqlServer.json', parameters('_artifactsLocationSasToken'))]",
+            "LoadExtensionForSqlServerScriptPS1": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/Set-LoadOnAvailabilityGroup.ps1', parameters('_artifactsLocationSasToken'))]",
+            "LoadExtensionForSqlServerScriptName": "Set-LoadOnAvailabilityGroup.ps1",
+            "FileServerExtension": "[concat(parameters('_artifactsLocation'), '/', parameters('nestedTemplateFolder'), '/deploy-FileServerExtension.json', parameters('_artifactsLocationSasToken'))]"
+        },
+
+        "VnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+        "SubnetRef": "[concat(variables('VnetID'),'/subnets/', parameters('subnetName'))]",
+        "jumphostVnetID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('jumphostvnetName'))]",
+        "jumphostSubnetRef": "[concat(variables('jumphostVnetID'), '/subnets/', parameters('jumphostSubnetName'))]",
+
+        "alwaysOnGithubArtifactsLink": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/sql-2016-alwayson",
+        "alwaysOnGithubArtifacts": {
+            "fswModulesURL": "[concat(variables('alwaysOnGithubArtifactsLink'),'/CreateFileShareWitness.ps1.zip')]",
+            "fswConfigurationFunction": "CreateFileShareWitness.ps1\\CreateFileShareWitness",
+            "sqlAOPrepareModulesURL": "[concat(variables('alwaysOnGithubArtifactsLink'), '/PrepareAlwaysOnSqlServer.ps1.zip')]",
+            "sqlAOPrepareConfigurationFunction": "PrepareAlwaysOnSqlServer.ps1\\PrepareAlwaysOnSqlServer",
+            "createClusterModulesURL": "[concat(variables('alwaysOnGithubArtifactsLink'), '/CreateFailoverCluster.ps1.zip')]",
+            "createClusterConfigurationFunction": "CreateFailoverCluster.ps1\\CreateFailoverCluster"
+        },
+
+        "sql2014AssetLocation": "https://raw.githubusercontent.com/Azure/AzureStack-QuickStart-Templates/master/sql-2014-non-ha",
+        "deploySql2014StandaloneModulesURL": "[concat(variables('sql2014AssetLocation'),'/deploySqlStandalone.ps1.zip')]",
+        "deploySql2014StandaloneConfigurationFunction": "deploySqlStandalone.ps1\\deploySqlStandalone",
+        "nicSuffix": "NIC1D",
+        "lbSettings": {
+            "sqlLBFE": "SqlLoadbalancerFrontend",
+            "sqlLBBE": "SqlLoadbalancerBackend",
+            "SQLAOProbe": "SQLAlwaysOnEndPointProbe"
+        },
+        "copy": [
+            {
+                "name": "AvailabilitySetNames",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('AvailabilitySetNames')), '-', variables('clusterNameScheme').availabilitySet)]"
+                }
+            },
+            {
+                "name": "VirtualMachineNames",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('VirtualMachineNames')), '-', variables('clusterNameScheme').sql)]"
+                }
+            },
+            {
+                "name": "FileShareWitnessNames",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('FileShareWitnessNames')), '-', variables('clusterNameScheme').filesharewitness)]"
+                }
+            },
+            {
+                "name": "LoadBalancerNames",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('LoadBalancerNames')), '-', variables('clusterNameScheme').loadbalancer)]"
+                }
+            },
+            {
+                "name": "LoadBalancerIDs",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "loadBalancerId": "[resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancerNames')[copyIndex('LoadBalancerIDs')].NameScheme)]",
+                    "sqlBEAddressPoolID": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancerNames')[copyIndex('LoadBalancerIDs')].NameScheme), '/backendAddressPools/', variables('lbSettings').sqlLBBE)]",
+                    "sqllbFEConfigID": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancerNames')[copyIndex('LoadBalancerIDs')].NameScheme), '/frontendIPConfigurations/', variables('lbSettings').sqlLBFE)]",
+                    "sqllbProbeID": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('LoadBalancerNames')[copyIndex('LoadBalancerIDs')].NameScheme), '/probes/', variables('lbSettings').SQLAOProbe)]"
+                }
+            },
+            {
+                "name": "SharePath",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('SharePath')), '-SharePath')]"
+                }
+            },
+            {
+                "name": "sqlAOEPName",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('sqlAOEPName')), '-HADR')]"
+                }
+            },
+            {
+                "name": "ClusterNames",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('CL', add(parameters('clusterParameters').StartIndex, copyIndex('ClusterNames')), '-SQL')]"
+                }
+            },
+            {
+                "name": "Listener",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('SQL-Listener-', add(parameters('clusterParameters').StartIndex, copyIndex('Listener')))]"
+                }
+            },
+            {
+                "name": "AvailabilityGroup",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "NameScheme": "[concat('SQL-AG-', add(parameters('clusterParameters').StartIndex, copyIndex('AvailabilityGroup')))]"
+                }
+            },
+            {
+                "name": "PrivateIpAddress",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "input": {
+                    "IP": "[replace(parameters('clusterParameters').IpRegionForLoadbalancers, 'XXX', string(add(copyIndex('PrivateIpAddress'), parameters('clusterParameters').StartIp)))]"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "name": "VirtualNetwork",
+            "type": "Microsoft.Resources/deployments",
+            "comments": "This resource will create a virtual network with default configurations",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').VirtualNetwork]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    },
+                    "addressPrefix": {
+                        "value": "[parameters('addressPrefix')]"
+                    },
+                    "subnetPrefix": {
+                        "value": "[parameters('subnetPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "JumpHostNetworkSecurityGroup",
+            "type": "Microsoft.Resources/deployments",
+            "comments": "This resource will create a JumpHostNetworkSecurityGroup",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericNetworkSecurityGroup]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "nsgName": {
+                        "value": "[parameters('jumphostNetworkSecurityGroupName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "JumpHostVirtualNetwork",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/JumpHostNetworkSecurityGroup"
+            ],
+            "comments": "This resource will create a virtual network with default configurations",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').VirtualNetwork]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[parameters('jumphostvnetName')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('jumphostSubnetName')]"
+                    },
+                    "addressPrefix": {
+                        "value": "[parameters('jumphostAddressPrefix')]"
+                    },
+                    "subnetPrefix": {
+                        "value": "[parameters('jumphostSubnetPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "VirtualNetworkPeeringOne",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/VirtualNetwork",
+                "Microsoft.Resources/deployments/JumpHostVirtualNetwork"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').VirtualNetworkPeering]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SourceVirtualNetwork": {
+                        "value": "[parameters('jumphostvnetName')]"
+                    },
+                    "RemoteVirtualNetwork": {
+                        "value": "[parameters('vnetName')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "VirtualNetworkPeeringTwo",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/VirtualNetwork",
+                "Microsoft.Resources/deployments/JumpHostVirtualNetwork",
+                "Microsoft.Resources/deployments/VirtualNetworkPeeringOne"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').VirtualNetworkPeering]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SourceVirtualNetwork": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "RemoteVirtualNetwork": {
+                        "value": "[parameters('jumphostvnetName')]"
+                    },
+                    "TrafficAllowed": {
+                        "value": true
+                    }
+                }
+            }
+        },
+        {
+            "name": "GenericActiveDirectoryController",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/VirtualNetwork"
+            ],
+            "comments": "This resource will deploy n-amount of generic Virtual Machines",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericActiveDirectoryController]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "subnetRef": {
+                        "value": "[variables('SubnetRef')]"
+                    },
+                    "ActiveDirectoryParameters": {
+                        "value": "[parameters('ActiveDirectoryParameters')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "UpdateVirtualNetwork",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/GenericActiveDirectoryController"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').VirtualNetworkWithDNS]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "vnetName": {
+                        "value": "[parameters('vnetName')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('subnetName')]"
+                    },
+                    "addressPrefix": {
+                        "value": "[parameters('addressPrefix')]"
+                    },
+                    "subnetPrefix": {
+                        "value": "[parameters('subnetPrefix')]"
+                    },
+                    "dnsServer": {
+                        "value": "[parameters('ActiveDirectoryParameters').ActiveDirectoryControllerStaticIP]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "GenericJumphost",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/JumpHostVirtualNetwork"
+            ],
+            "comments": "This resource will deploy n-amount of generic Virtual Machines",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericJumphost]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('JumphostAdmin')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('JumphostPassword')]"
+                    },
+                    "subnetRef": {
+                        "value": "[variables('jumphostSubnetRef')]"
+                    },
+                    "JumphostParameters": {
+                        "value": "[parameters('JumphostParameters')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "GenericNetworkInterfaces",
+            "type": "Microsoft.Resources/deployments",
+            "condition": "[greater(parameters('vmParameters').VirtualMachineCount, 0)]",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/VirtualNetwork"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericNetworkInterfaces]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "subnetRef": {
+                        "value": "[variables('SubnetRef')]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    },
+                    "nicSuffix": {
+                        "value": "[variables('nicSuffix')]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(equals(parameters('vmParameters').ManagedDisk, 'true'), greater(parameters('vmParameters').VirtualMachineCount, 0))]",
+            "name": "VirtualMachinesWithManagedDisks",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/GenericNetworkInterfaces",
+                "Microsoft.Resources/deployments/VirtualNetwork"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[if(greater(parameters('vmParameters').DiskAmount, 0), variables('deploymentArtifacts').GenericVirtualMachineWithManagedDisk, variables('deploymentArtifacts').GenericVirtualMachineWithManagedDiskNoDatadisk)]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "diskSizeGB": {
+                        "value": "[parameters('vmParameters').DiskSize]"
+                    },
+                    "diskAmount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "imageOffer": {
+                        "value": "[parameters('vmParameters').Offer]"
+                    },
+                    "imagePublisher": {
+                        "value": "[parameters('vmParameters').Publisher]"
+                    },
+                    "imageSKU": {
+                        "value": "[parameters('vmParameters').SKU]"
+                    },
+                    "virtualMachineSize": {
+                        "value": "[parameters('vmParameters').VirtualMachineSize]"
+                    },
+                    "storageAccountType": {
+                        "value": "[parameters('vmParameters').StorageAccountType]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    },
+                    "nicSuffix": {
+                        "value": "[variables('nicSuffix')]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(equals(parameters('vmParameters').ManagedDisk, 'false'), greater(parameters('vmParameters').VirtualMachineCount, 0))]",
+            "name": "VirtualMachinesWithUnmanagedDisks",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/GenericNetworkInterfaces",
+                "Microsoft.Resources/deployments/VirtualNetwork"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[if(greater(parameters('vmParameters').DiskAmount, 0), variables('deploymentArtifacts').GenericVirtualMachineWithUnmanagedDisk, variables('deploymentArtifacts').GenericVirtualMachineWithUnmanagedDiskNoDatadisk)]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "imageOffer": {
+                        "value": "[parameters('vmParameters').Offer]"
+                    },
+                    "diskSizeGB": {
+                        "value": "[parameters('vmParameters').DiskSize]"
+                    },
+                    "diskAmount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "imagePublisher": {
+                        "value": "[parameters('vmParameters').Publisher]"
+                    },
+                    "imageSKU": {
+                        "value": "[parameters('vmParameters').SKU]"
+                    },
+                    "virtualMachineSize": {
+                        "value": "[parameters('vmParameters').VirtualMachineSize]"
+                    },
+                    "storageAccountType": {
+                        "value": "[parameters('vmParameters').StorageAccountType]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    },
+                    "nicSuffix": {
+                        "value": "[variables('nicSuffix')]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), or(equals(parameters('vmParameters').Offer, 'WindowsServer'), equals(parameters('vmParameters').Publisher, 'MicrosoftSQLServer')))]",
+            "name": "ActiveDirectoryJoin",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/UpdateVirtualNetwork",
+                "Microsoft.Resources/deployments/GenericActiveDirectoryController",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').AdJoinExtension]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "domainToJoin": {
+                        "value": "[parameters('ActiveDirectoryParameters').DomainName]"
+                    },
+                    "domainJoinOptions": {
+                        "value": 3
+                    },
+                    "domainUserName": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "domainPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Offer, 'WindowsServer'), equals(parameters('vmParameters').Extension, 'Sql2014'))]",
+            "name": "SQLServer2014",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').SqlServer2014]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "deploySqlStandaloneModulesURL": {
+                        "value": "[variables('deploySql2014StandaloneModulesURL')]"
+                    },
+                    "deploySqlStandaloneConfigurationFunction": {
+                        "value": "[variables('deploySql2014StandaloneConfigurationFunction')]"
+                    },
+                    "sqlInstallationISOUri": {
+                        "value": "[parameters('sql2014InstallationISOUri')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('ActiveDirectoryParameters').DomainName]"
+                    },
+                    "primaryAdIpAddress": {
+                        "value": "[parameters('ActiveDirectoryParameters').ActiveDirectoryControllerStaticIP]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Offer, 'SQL2016SP2-WS2016'), greater(parameters('vmParameters').DiskAmount,0), equals(parameters('vmParameters').Extension, 'Sql2016SP2'))]",
+            "name": "SQL2016SP2-WS2016",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').SqlServerGeneral]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "sqlStorageDisksCount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "sqlAuthenticationLogin": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "sqlAuthenticationPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Offer, 'SQL2016SP1-WS2016'), greater(parameters('vmParameters').DiskAmount,0), equals(parameters('vmParameters').Extension, 'Sql2016SP1'))]",
+            "name": "SQL2016SP1-WS2016",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').SqlServerGeneral]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "sqlStorageDisksCount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "sqlAuthenticationLogin": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "sqlAuthenticationPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Offer, 'SQL2019-WS2019'), greater(parameters('vmParameters').DiskAmount,0), equals(parameters('vmParameters').Extension, 'Sql2019'))]",
+            "name": "SQL2019-WS2019",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').SqlServerGeneral]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "sqlStorageDisksCount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "sqlAuthenticationLogin": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "sqlAuthenticationPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Extension, 'FileServer'))]",
+            "name": "FileServerExtension",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').FileServerExtension]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "fileShareOwner": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "fileShareOwnerPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "fileShareUser": {
+                        "value": "FileShareUser"
+                    },
+                    "fileShareUserPassword": {
+                        "value": "StU73A$P6tryLt9u"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('vmParameters').VirtualMachineCount, 0), equals(parameters('vmParameters').Offer, 'SQL2017-WS2016'), greater(parameters('vmParameters').DiskAmount,0), equals(parameters('vmParameters').Extension, 'Sql2017'))]",
+            "name": "SQL2017-WS2016",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/ActiveDirectoryJoin",
+                "[concat('Microsoft.Resources/deployments/', if(equals(parameters('vmParameters').ManagedDisk, 'true'), 'VirtualMachinesWithManagedDisks', 'VirtualMachinesWithUnmanagedDisks'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').SqlServerGeneral]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[parameters('vmParameters').VirtualMachineNamePrefix]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[parameters('vmParameters').ParallelDeployments]"
+                    },
+                    "startIndex": {
+                        "value": "[parameters('vmParameters').StartIndex]"
+                    },
+                    "sqlStorageDisksCount": {
+                        "value": "[parameters('vmParameters').DiskAmount]"
+                    },
+                    "sqlAuthenticationLogin": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "sqlAuthenticationPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[parameters('vmParameters').VirtualMachineCount]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[variables('AvailabilitySetNames')[copyIndex('clusterLoop')].NameScheme]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericAvailabilitySet]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlAvailabilitySetName": {
+                        "value": "[variables('AvailabilitySetNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "ManagedDisk": {
+                        "value": "[parameters('clusterParameters').ManagedDisk]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[variables('LoadBalancerNames')[copyIndex('clusterLoop')].NameScheme]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', variables('AvailabilitySetNames')[copyIndex('clusterLoop')].NameScheme)]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').GenericLoadbalancers]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlLBName": {
+                        "value": "[variables('LoadBalancerNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlLBFE": {
+                        "value": "[variables('lbSettings').sqlLBFE]"
+                    },
+                    "staticSubnetRef": {
+                        "value": "[variables('SubnetRef')]"
+                    },
+                    "sqlLBBE": {
+                        "value": "[variables('lbSettings').sqlLBBE]"
+                    },
+                    "sqlLBBEID": {
+                        "value": "[variables('LoadBalancerIDs')[copyIndex('clusterLoop')].sqlBEAddressPoolID]"
+                    },
+                    "sqllbFEConfigID": {
+                        "value": "[variables('LoadBalancerIDs')[copyIndex('clusterLoop')].sqllbFEConfigID]"
+                    },
+                    "sqllbProbeID": {
+                        "value": "[variables('LoadBalancerIDs')[copyIndex('clusterLoop')].sqllbProbeID]"
+                    },
+                    "SQLAOProbe": {
+                        "value": "[variables('lbSettings').SQLAOProbe]"
+                    },
+                    "PrivateStaticIpAddress": {
+                        "value": "[variables('PrivateIpAddress')[copyIndex('clusterLoop')].IP]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'NetworkInterfaces')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', variables('LoadBalancerNames')[copyIndex('clusterLoop')].NameScheme)]",
+                "Microsoft.Resources/deployments/VirtualNetwork"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').ClusterNetworkInterface]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "ActiveDirectoryControllerIP": {
+                        "value": "[parameters('ActiveDirectoryParameters').ActiveDirectoryControllerStaticIP]"
+                    },
+                    "SqlServerNetworkInterfaceNamePrefix": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlSubnetRef": {
+                        "value": "[variables('SubnetRef')]"
+                    },
+                    "sqlBEAddressPoolID": {
+                        "value": "[variables('LoadBalancerIDs')[copyIndex('clusterLoop')].sqlBEAddressPoolID]"
+                    },
+                    "SqlWitnessNetworkInterfaceName": {
+                        "value": "[variables('FileShareWitnessNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "AmountOfSqlMachines": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "ParallelDeployments": {
+                        "value": "[variables('deploymentConfig').ParallelVmDeployments]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'VirtualMachines')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'NetworkInterfaces'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[if(equals(parameters('clusterParameters').ManagedDisk, 'true'), variables('deploymentArtifacts').ClusterVirtualMachineWithManagedDisk, variables('deploymentArtifacts').ClusterVirtualMachineWithUnmanagedDisk)]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "diskSizeGB": {
+                        "value": "[parameters('clusterParameters').SqlDiskSize]"
+                    },
+                    "diskAmount": {
+                        "value": "[parameters('clusterParameters').AmountOfSqlDisks]"
+                    },
+                    "imageOffer": {
+                        "value": "[parameters('clusterParameters').Offer]"
+                    },
+                    "imagePublisher": {
+                        "value": "[parameters('clusterParameters').Publisher]"
+                    },
+                    "imageSKU": {
+                        "value": "[parameters('clusterParameters').SKU]"
+                    },
+                    "virtualMachineSize": {
+                        "value": "[parameters('clusterParameters').VirtualMachineSize]"
+                    },
+                    "storageAccountType": {
+                        "value": "[parameters('clusterParameters').StorageAccountType]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[variables('deploymentConfig').ParallelVmDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "nicSuffix": {
+                        "value": "NIC1D"
+                    },
+                    "virtualMachinePrefix": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlAvailabilitySetName": {
+                        "value": "[variables('AvailabilitySetNames')[copyIndex('clusterLoop')].NameScheme]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'FileShareWitness')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'NetworkInterfaces'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[if(equals(parameters('clusterParameters').ManagedDisk, 'true'), variables('deploymentArtifacts').ClusterFileWitnessWithManagedDisk, variables('deploymentArtifacts').ClusterFileWitnessWithUnmanagedDisk)]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "imageOffer": {
+                        "value": "[variables('fileShareWitnessConfiguration').imageOffer]"
+                    },
+                    "imagePublisher": {
+                        "value": "[variables('fileShareWitnessConfiguration').imagePublisher]"
+                    },
+                    "imageSKU": {
+                        "value": "[parameters('clusterParameters').FileShareWitnessOsVersion]"
+                    },
+                    "virtualMachineSize": {
+                        "value": "[parameters('clusterParameters').FileShareWitnessVmSize]"
+                    },
+                    "storageAccountType": {
+                        "value": "[parameters('clusterParameters').FileShareWitnessStorageAccountType]"
+                    },
+                    "nicSuffix": {
+                        "value": "[variables('fileShareWitnessConfiguration').nicSuffix]"
+                    },
+                    "virtualMachineName": {
+                        "value": "[variables('FileShareWitnessNames')[copyIndex('clusterLoop')].NameScheme]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'FileShareWitnessConfiguration')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/UpdateVirtualNetwork",
+                "[concat('Microsoft.Resources/deployments/', concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'FileShareWitness'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').FileShareWitnessConfiguration]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('ActiveDirectoryParameters').DomainName]"
+                    },
+                    "sharePath": {
+                        "value": "[variables('SharePath')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "virtualMachineName": {
+                        "value": "[variables('FileShareWitnessNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "fswModulesURL": {
+                        "value": "[variables('alwaysOnGithubArtifacts').fswModulesURL]"
+                    },
+                    "fswConfigurationFunction": {
+                        "value": "[variables('alwaysOnGithubArtifacts').fswConfigurationFunction]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SQLIaaSExtension')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "Microsoft.Resources/deployments/UpdateVirtualNetwork",
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'VirtualMachines')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').ClusterSQLIaaSExtension]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlAuthUserName": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "sqlAuthPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[variables('deploymentConfig').ParallelVmDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "virtualMachineName": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SQLAOPREPARE')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SQLIaaSExtension')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').ClusterSqlAoPrepare]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "sqlServerServiceAccountUserName": {
+                        "value": "[parameters('sqlServerServiceAccountUserName')]"
+                    },
+                    "sqlServerServiceAccountPassword": {
+                        "value": "[parameters('sqlServerServiceAccountPassword')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[variables('deploymentConfig').ParallelVmDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "virtualMachineName": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('ActiveDirectoryParameters').DomainName]"
+                    },
+                    "sqlAOPrepareModulesURL": {
+                        "value": "[variables('alwaysOnGithubArtifacts').sqlAOPrepareModulesURL]"
+                    },
+                    "sqlAOPrepareConfigurationFunction": {
+                        "value": "[variables('alwaysOnGithubArtifacts').sqlAOPrepareConfigurationFunction]"
+                    },
+                    "sqlAOEPName": {
+                        "value": "[variables('sqlAOEPName')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "numberOfDisks": {
+                        "value": "[parameters('clusterParameters').AmountOfSqlDisks]"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'ClusterConfiguration')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SQLAOPREPARE')]",
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'FileShareWitnessConfiguration')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').ClusterConfiguration]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "SqlVirtualMachineName": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "location": {
+                        "value": "[resourceGroup().location]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "domainName": {
+                        "value": "[parameters('ActiveDirectoryParameters').DomainName]"
+                    },
+                    "sqlAOEPName": {
+                        "value": "[variables('sqlAOEPName')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlServerServiceAccountUserName": {
+                        "value": "[parameters('sqlServerServiceAccountUserName')]"
+                    },
+                    "sqlServerServiceAccountPassword": {
+                        "value": "[parameters('sqlServerServiceAccountPassword')]"
+                    },
+                    "createClusterModulesURL": {
+                        "value": "[variables('alwaysOnGithubArtifacts').createClusterModulesURL]"
+                    },
+                    "createClusterConfigurationFunction": {
+                        "value": "[variables('alwaysOnGithubArtifacts').createClusterConfigurationFunction]"
+                    },
+                    "clusterName": {
+                        "value": "[variables('ClusterNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlAOAGName": {
+                        "value": "[variables('AvailabilityGroup')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlAOListenerName": {
+                        "value": "[variables('Listener')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlAOListenerPort": {
+                        "value": "1433"
+                    },
+                    "sqlLBName": {
+                        "value": "[variables('LoadBalancerNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "sqlLBIPAddress": {
+                        "value": "[variables('PrivateIpAddress')[copyIndex('clusterLoop')].IP]"
+                    },
+                    "ActiveDirectoryController": {
+                        "value": "[parameters('ActiveDirectoryParameters').VirtualMachineName]"
+                    },
+                    "FileShareWitnessName": {
+                        "value": "[variables('FileShareWitnessNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "numberOfDataDisks": {
+                        "value": "[parameters('clusterParameters').AmountOfSqlDisks]"
+                    },
+                    "databaseName": {
+                        "value": "SQL-Cluster-Test"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[variables('deploymentConfig').ParallelVmDeployments]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "sharePath": {
+                        "value": "[variables('SharePath')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "workloadType": {
+                        "value": "GENERAL"
+                    }
+                }
+            }
+        },
+        {
+            "condition": "[and(greater(parameters('clusterParameters').AmountOfClusters, 0), greater(parameters('clusterParameters').AmountOfSqlDisks, 0))]",
+            "name": "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SqlLoadExtensions')]",
+            "copy": {
+                "batchSize": "[parameters('clusterParameters').ParallelDeployments]",
+                "count": "[parameters('clusterParameters').AmountOfClusters]",
+                "mode": "Serial",
+                "name": "clusterLoop"
+            },
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'SQLAOPREPARE')]",
+                "[concat(variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme, 'ClusterConfiguration')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptJson]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "LoadExtensionForSqlServerScript": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptPS1]"
+                    },
+                    "LoadExtensionForSqlServerScriptName": {
+                        "value": "[variables('deploymentArtifacts').LoadExtensionForSqlServerScriptName]"
+                    },
+                    "virtualMachineAmount": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    },
+                    "virtualMachineName": {
+                        "value": "[variables('VirtualMachineNames')[copyIndex('clusterLoop')].NameScheme]"
+                    },
+                    "deploymentsAtOnce": {
+                        "value": "[variables('deploymentConfig').AmountOfSqlMachines]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {}
+}

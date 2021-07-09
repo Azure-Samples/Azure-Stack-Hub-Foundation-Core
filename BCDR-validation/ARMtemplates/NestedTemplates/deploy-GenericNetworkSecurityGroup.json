@@ -1,0 +1,50 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "apiProfile": "2018-03-01-hybrid",
+  "parameters": {
+    "nsgName": {
+      "type": "String"
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[parameters('nsgName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "RDP-Inbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": 3389,
+              "destinationPortRange": 3389,
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "RDP-Outbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": 3389,
+              "destinationPortRange": 3389,
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {}
+}

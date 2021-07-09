@@ -1,0 +1,36 @@
+
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "apiProfile": "2018-03-01-hybrid",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "sqlAvailabilitySetName": {
+            "type": "string"
+        },
+        "ManagedDisk": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "updateDomainCount": "5",
+        "faultDomainCount": "3"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[parameters('sqlAvailabilitySetName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[if(equals(parameters('ManagedDisk'), 'true'), 'Aligned', 'Classic')]"
+            },
+            "properties": {
+                "platformFaultDomainCount": "[variables('faultDomainCount')]",
+                "platformUpdateDomainCount": "[variables('updateDomainCount')]"
+            }
+        }
+    ],
+    "outputs": {}
+}
