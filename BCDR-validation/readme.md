@@ -1,9 +1,9 @@
+> These tests are completed and provided by each of the partners. 
+> The results, ARM templates, and guidance in this repo are for informational purposes only. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED.
+
 # Business Continuity and Disaster Recovery (BCDR) solutions for Azure Stack Hub
 
 This program focuses on validation of Business Continuity and Disaster Recovery (BCDR) solutions and migration solutions, on Azure Stack Hub. It is aimed to simplify the path to production-ready of your cloud infrastructure, when running workloads in your datacenter, on Azure Stack Hub.
-
-> These tests are completed and provided by each of the partners. 
-> The results, ARM templates, and guidance in this repo are for informational purposes only. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED.
 
 Cloud operators and users of Azure Stack Hub deploying applications and datasets need the ability to quickly recover from data loss and catastrophic failures. With offerings from multiple partners, you can enable data protection and disaster recovery for your applications and data. The full list of BCDR partners can be found in the [Azure Stack Datacenter Integration Partner Ecosystem](https://aka.ms/azurestackbcdrpartners) white paper. This program focuses on a subset of those partners and is aimed at testing real-world, end-to-end, scenarios.
 
