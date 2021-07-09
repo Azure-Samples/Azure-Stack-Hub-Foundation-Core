@@ -105,7 +105,7 @@
 		"AADUserName": {
 			"type": "string",
 			"metadata": {
-				"description": "Password of the Azure Directory, please provide while DeploymentType is AAD"
+				"description": "UserName of the Azure Directory, please provide while DeploymentType is AAD - user@yourtenant.onmicrosoft.com"
 			}
 		},
 		"AADPassword": {
@@ -125,6 +125,13 @@
 			"metadata": {
 				"description": "ASDK deployment type"
 			}
+		},
+		"TimeServerIP": {
+			"type": "string",
+			"metadata": {
+				"description": "NTP IP, if NTP service is down or IP unreachable, ASDK install will fail"
+			},
+			"defaultValue": "13.86.101.172"
 		}
 	},
 	"variables": {
@@ -258,6 +265,11 @@
 				"[resourceId('Microsoft.Compute/images/', variables('imageName'))]"
 			],
 			"properties": {
+				"priority": "Spot",
+                "evictionPolicy": "Deallocate",
+                "billingProfile": {
+                    "maxPrice": -1
+                },
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
 				},
@@ -324,7 +336,7 @@
 							"fileUris": [
 								"[variables('extensionFileLocation')]"
 							],
-							"commandToExecute": "[concat('powershell.exe -File Invoke-ASDKDeployment.ps1 -AdminUsername ', parameters('adminUsername'), ' -AdminPassword ', parameters('adminPassword'), ' -AzureDirectoryTenantName ', parameters('AzureDirectoryTenantName'), ' -AADUsername ', parameters('AADUsername'), ' -AADPassword ',variables('doubleQuote') , parameters('AADPassword'), variables('doubleQuote') ,' -DeploymentType ', parameters('DeploymentType'))]"
+							"commandToExecute": "[concat('powershell.exe -File Invoke-ASDKDeployment.ps1 -AdminUsername ', parameters('adminUsername'), ' -AdminPassword ', parameters('adminPassword'), ' -TimeServerIP ', parameters('TimeServerIP'), ' -AzureDirectoryTenantName ', parameters('AzureDirectoryTenantName'), ' -AADUsername ', parameters('AADUsername'), ' -AADPassword ',variables('doubleQuote') , parameters('AADPassword'), variables('doubleQuote') ,' -DeploymentType ', parameters('DeploymentType'))]"
 						}
 					}
 				}
