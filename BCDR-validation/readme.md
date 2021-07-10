@@ -1,5 +1,5 @@
-> These tests are completed and provided by each of the partners. 
-> The results, ARM templates, and guidance in this repo are for informational purposes only. MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED.
+> These test results are completed and provided by each of the partners listed on this page.  
+> The test results, ARM templates, and guidance (the “Materials”) in this repo are for informational purposes only. The Materials are provided “AS IS” and MICROSOFT MAKES NO WARRANTIES, EXPRESS OR IMPLIED regarding the Materials
 
 # Business Continuity and Disaster Recovery (BCDR) solutions for Azure Stack Hub
 
