@@ -94,7 +94,7 @@ The full list of scripts can be found here: [ARMtemplates](https://github.com/rt
 | Migrate between AzStackHubs | 1.2102.11.40                    | 6.6.0a_release-20210315_a47862d5 |
 | Migrate to AzStackHub       | 1.2102.11.40                    | 6.6.0a_release-20210315_a47862d5 |
 
-[Link to full results doc](cohesity_results_round1.md)
+[Link to full Cohesity results doc](cohesity_results_round1.md)
 
 ### Commvault
 
@@ -104,7 +104,7 @@ The full list of scripts can be found here: [ARMtemplates](https://github.com/rt
 | Migrate between AzStackHubs | 1.2102.11.40                    |11.23              |
 | Migrate to AzStackHub       | 1.2102.11.40                    |11.23              |
 
-[Link to full results doc](commvault_results_round1.md)
+[Link to full Commvault results doc](commvault_results_round1.md)
 
 ### Veeam
 
@@ -114,4 +114,4 @@ The full list of scripts can be found here: [ARMtemplates](https://github.com/rt
 | Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.873    |
 | Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.873    |
 
-[Link to full results doc](Veeam_results_round1.md)
+[Link to full Veeam results doc](Veeam_results_round1.md)
