@@ -110,8 +110,8 @@ The full list of scripts can be found here: [ARMtemplates](https://github.com/rt
 
 | Scenario                    | AzStackHub Version (each stamp) | Veeam version |
 |-----------------------------|---------------------------------|---------------|
-| AzStackHub to AzStackHub    | 1.2102.11.40                    | 11.0.0.873    |
-| Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.873    |
-| Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.873    |
+| AzStackHub to AzStackHub    | 1.2102.11.40                    | 11.0.0.837    |
+| Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.837    |
+| Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.837    |
 
 [Link to full Veeam results doc](Veeam_results_round1.md)
