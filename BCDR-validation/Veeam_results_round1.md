@@ -23,9 +23,9 @@ Contact
 
 | Scenario                    | Azure Stack Hub Version (each stamp) | Veeam version |
 |-----------------------------|---------------------------------|---------------|
-| AzStackHub to AzStackHub    | 1.2102.11.40                    | 11.0.0.873    |
-| Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.873    |
-| Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.873    |
+| AzStackHub to AzStackHub    | 1.2102.11.40                    | 11.0.0.837    |
+| Migrate between AzStackHubs | 1.2102.11.40                    | 11.0.0.837    |
+| Migrate to AzStackHub       | 1.2102.11.40                    | 11.0.0.837    |
 
 
 ## Veeam Support for Azure Stack Hub
