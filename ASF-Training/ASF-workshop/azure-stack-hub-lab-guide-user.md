@@ -12,7 +12,7 @@ In this set of procedures, the lab user will perform functions as both the Azure
 
 ## Lab Environment
 
-There are several ways to deploy an ASDK - you can check the http://aka.ms/asdk to download and use the Microsoft recommended options, or you could try community based scripts that help create ASDKs that are hosted even in Azure (https://github.com/yagmurs/AzureStack-VM-PoC).
+There are several ways to deploy an ASDK - you can check the http://aka.ms/asdk to download and use it on dedicated hardware, or if you do not have this hardware, you could also could try deploying the [ASDK in an Azure VM](https://aka.ms/azshasdk).
 
 Regardless how you deploy it, this guide assumes that:
 1. you have a running ASDK, that leverages AAD for identity
