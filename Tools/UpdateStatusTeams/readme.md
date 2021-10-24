@@ -134,7 +134,7 @@ To stop the monitoring, use crtl+c in the powershell.
 
 ##### Optional parameters
 
-**-Brief** (recommended) switch. Audiences and operators are only updated if there is a change to the update or the stamps update history. This is to minimise spam, it is turn off by default.
+**-Brief** (recommended) switch. Audiences and operators are only updated if there is a change to the update, or the stamps update history and evaluates each message against the previous message and avoids sending duplicates. 
 
 **-HideEnvironmentInformation** switch. This will remove the stamp inventory from the footer of the card.
 
