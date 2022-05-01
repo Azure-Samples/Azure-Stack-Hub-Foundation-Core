@@ -131,7 +131,7 @@
 			"metadata": {
 				"description": "NTP IP, if NTP service is down or IP unreachable, ASDK install will fail"
 			},
-			"defaultValue": "13.86.101.172"
+			"defaultValue": "129.6.15.28"
 		}
 	},
 	"variables": {
