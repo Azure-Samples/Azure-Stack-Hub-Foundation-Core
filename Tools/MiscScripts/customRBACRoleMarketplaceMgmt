@@ -1,0 +1,26 @@
+{
+    "properties": {
+        "roleName": "Marketplace Admin",
+        "description": "Custom role for marketplace administration",
+        "assignableScopes": [
+            "/subscriptions/the-sub-id-default-provider/resourceGroups/azurestack-activation"
+        ],
+        "permissions": [
+            {
+                "actions": [
+                    "Microsoft.AzureBridge.Admin/activations/downloadedProducts/delete",
+                    "Microsoft.AzureBridge.Admin/activations/downloadedProducts/read",
+                    "Microsoft.AzureBridge.Admin/activations/downloadedProducts/write",
+                    "Microsoft.AzureBridge.Admin/activations/products/download/action",
+                    "Microsoft.AzureBridge.Admin/activations/products/read",
+                    "Microsoft.AzureBridge.Admin/activations/read",
+                    "Microsoft.AzureBridge.Admin/locations/operationresults/read",
+                    "Microsoft.AzureBridge.Admin/Operations/read"
+                ],
+                "notActions": [],
+                "dataActions": [],
+                "notDataActions": []
+            }
+        ]
+    }
+}
