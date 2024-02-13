@@ -15,9 +15,9 @@ Before starting, there are a few things to consider:
 - You will need an Azure Subscription where we will deploy a VM large enough (default value is "Standard_E48s_v3") to support the ASDK.
 - make sure you have the AAD name you plan to use for the ASDK deployment and a user that is a Global Admin in that AAD
 - Create a storage account in the region where you plan to deploy the ASDK. In this storage account you will need to copy the VHD (the cloudbuilder.vhd file) so that the ARM template can use it. Once you create the Storage Account copy the CloudBuilder VHD from the following storage account container location.(this will be used as a source for the Azure VM created, so it will not be changed and only needs to be copied once per region)
+  - 2306 image: https://asdkstorageacc.blob.core.windows.net/2306/CloudBuilder.vhd
   - 2206 image: https://asdkstorageacc.blob.core.windows.net/2206/CloudBuilder.vhd
-  - 2108 image: https://azstcenus2.blob.core.windows.net/azsforazure-2108/Cloudbuilder.vhd
-  - 2102 image: https://azstcenus2.blob.core.windows.net/azsforazure/Cloudbuilder.vhd
+  
 
 > one option to copy is to create a container in this Storage Account created previously (in the same region where you plan to deploy the ASDK), a SAS key, open CloudShell and run:
 > azcopy copy 'https://sourcecontainer.location/Cloudbuilder.vhd' 'https://yourstoraccountname.address/containername?SASkey'
